@@ -13,9 +13,15 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.5",
+    "@emnapi/core": "1.11.3",
+    "@emnapi/runtime": "1.11.3",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.1.6",
     "pdfjs-dist": "^6.2.108",
     "tailwindcss": "^4.3.3"
+  },
+  "overrides": {
+    "@emnapi/core": "1.11.3",
+    "@emnapi/runtime": "1.11.3"
   }
 }
