@@ -28,6 +28,8 @@ npm run build
 
 Cloudflare Pagesではビルドコマンドに `npm run build`、出力ディレクトリに `dist` を設定します。静的サイトとして公開できます。
 
+Git 連携（Workers Builds）を使う場合のデプロイコマンドは `npx wrangler pages deploy dist --project-name=neet-magazine-site` です（`npx wrangler deploy` ではありません）。
+
 ## お問い合わせ送信の有効化
 
 フォームは `/api/contact` に POST し、Cloudflare Pages Functions から Resend 経由でメールを送信します。すべての種別の問い合わせは `neet.na.magazine@gmail.com` に届きます（`CONTACT_TO_EMAIL` で変更可能）。
