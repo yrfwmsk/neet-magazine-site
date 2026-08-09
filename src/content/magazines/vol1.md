@@ -2,7 +2,7 @@
 volume: vol1
 title: ニートマガジン Vol.1
 publishedAt: 2024-02-16
-summary: ニートの世界が始まる創刊号。
+summary: ニートの世界に入門する創刊号。
 price: 600円
 pageCount: 46
 pdfPath: /pdf/vol1.pdf

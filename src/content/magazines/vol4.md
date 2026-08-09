@@ -9,7 +9,6 @@ pdfPath: /pdf/vol4.pdf
 cover: /images/covers/vol4.png
 coverArtist: コソウ
 coverArtistId: kosou
-coverAfterword: 乳酸菌整腸剤の1日の分量をまとめて1回で食べています。おなかの調子はまあまあです。
 featureTitle: 働きたくない、でも生活はある。
 guests:
   - 石井あらた
