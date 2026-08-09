@@ -162,7 +162,21 @@ const articleSlug = article.id.split('/').at(-1) ?? '';
 				}
 			}, { passive: false, capture: true });
 			const currentItem = document.querySelector('.article-toc__item--current');
-			currentItem?.scrollIntoView({ block: 'nearest' });
+			// scrollIntoView は document まで動かすため、スマホで記事中盤に開く原因になる。
+			// TOC が可視のときだけ、viewport 内スクロールに限定する。
+			if (
+				currentItem &&
+				toc &&
+				getComputedStyle(toc).display !== 'none'
+			) {
+				const itemRect = currentItem.getBoundingClientRect();
+				const viewRect = viewport.getBoundingClientRect();
+				if (itemRect.top < viewRect.top) {
+					viewport.scrollTop += itemRect.top - viewRect.top;
+				} else if (itemRect.bottom > viewRect.bottom) {
+					viewport.scrollTop += itemRect.bottom - viewRect.bottom;
+				}
+			}
 			updateTocScroll();
 			requestAnimationFrame(updateTocScroll);
 		}
