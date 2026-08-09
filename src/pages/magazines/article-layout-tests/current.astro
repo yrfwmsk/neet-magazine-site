@@ -1,0 +1,35 @@
+---
+import ArticleLayoutTestBody from '../../../components/ArticleLayoutTestBody.astro';
+import ArticleLayoutTestNav from '../../../components/ArticleLayoutTestNav.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { SAMPLE_ARTICLES, SAMPLE_CURRENT } from '../../../lib/article-layout-test';
+---
+
+<BaseLayout title="記事レイアウト · 現行 | ニートマガジン">
+	<section class="shell shell--with-toc py-16 md:py-24">
+		<p class="eyebrow">TEST · CURRENT</p>
+		<h1 class="mt-4 text-3xl font-black md:text-4xl">現行レイアウト</h1>
+		<p class="mt-4 max-w-xl text-sm text-[var(--muted)]">
+			右サイド記事一覧あり・shell 1040px。ヘッダー（920px）より外側にタイトルがはみ出す現状の再現です。
+		</p>
+		<ArticleLayoutTestNav current="current" />
+
+		<div class="article-layout article-layout--with-toc mt-14">
+			<article class="min-w-0">
+				<ArticleLayoutTestBody />
+				<a class="mt-12 inline-block" href="/magazines/vol2">← vol2 へ戻る</a>
+			</article>
+			<aside class="article-toc">
+				<div class="issue-list">
+					<p class="eyebrow">記事一覧</p>
+					{SAMPLE_ARTICLES.map((item) => {
+						const isCurrent = item.slug === SAMPLE_CURRENT.slug;
+						return isCurrent
+							? <span class="issue-current mt-3 block text-sm" aria-current="page">{item.title}</span>
+							: <a class="mt-3 block text-sm" href={`/magazines/vol2/${item.slug}`}>{item.title}</a>;
+					})}
+				</div>
+			</aside>
+		</div>
+	</section>
+</BaseLayout>

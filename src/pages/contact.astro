@@ -1,0 +1,713 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import { getCollection } from 'astro:content';
+
+/** 応募開始時に true に変更する */
+const CONTRIBUTION_OPEN = false;
+
+const formatSurveyVolume = (volume: string) => {
+	const number = volume.replace(/^vol/i, '');
+	return `vol.${number}`;
+};
+
+const surveyArticleCatalog = (await getCollection('articles'))
+	.sort((a, b) => {
+		const volumeA = Number(a.data.volume.replace(/^vol/i, ''));
+		const volumeB = Number(b.data.volume.replace(/^vol/i, ''));
+		if (volumeA !== volumeB) return volumeA - volumeB;
+		return a.data.order - b.data.order;
+	})
+	.map((article) => ({
+		id: article.id,
+		volume: article.data.volume,
+		volumeLabel: formatSurveyVolume(article.data.volume),
+		title: article.data.title,
+	}));
+---
+
+<BaseLayout title="お問い合わせ | ニートマガジン">
+	<PageHero label="CONTACT" title="お問い合わせ" />
+	<section class="shell pb-16 md:pb-24">
+		<p class="max-w-xl text-[var(--muted)]">メンバー応募、乱入寄稿、匿名読者アンケート、その他のお問い合わせを<br />受け付けています。</p>
+		<form id="contact-form" class="mt-12 max-w-2xl space-y-7" novalidate>
+			<div>
+				<label for="kind" class="block font-bold">種別</label>
+				<select id="kind" name="kind" class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3" required>
+					<option value="">選択してください</option>
+					<option value="member">メンバー応募</option>
+					<option value="contribution">乱入寄稿応募</option>
+					<option value="survey">匿名読者アンケート</option>
+					<option value="other">その他</option>
+				</select>
+			</div>
+			<div id="contact-fields" class="space-y-7" hidden>
+				<div data-kinds="other" class="space-y-7">
+					<div>
+						<label for="other-name" class="block font-bold">
+							お名前・ハンドルネーム
+							<span class="text-red-600" aria-hidden="true">*</span>
+						</label>
+						<input
+							id="other-name"
+							name="other-name"
+							class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+							data-required
+						/>
+					</div>
+					<div>
+						<label for="other-email" class="block font-bold">
+							メールアドレス
+							<span class="text-red-600" aria-hidden="true">*</span>
+						</label>
+						<input
+							id="other-email"
+							name="other-email"
+							type="email"
+							class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+							data-required
+						/>
+					</div>
+					<div>
+						<label for="other-message" class="block font-bold">
+							内容
+							<span class="text-red-600" aria-hidden="true">*</span>
+						</label>
+						<textarea
+							id="other-message"
+							name="other-message"
+							rows="8"
+							class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+							data-required
+						></textarea>
+					</div>
+				</div>
+				<div data-kinds="contribution" class="space-y-7">
+					<p id="contribution-closed-notice" class="font-bold" hidden>
+						現在、乱入寄稿は募集しておりません
+					</p>
+					<div id="contribution-fields" class="space-y-7">
+						<div>
+							<label for="contribution-name" class="block font-bold">
+								名前（本名・ハンドルネーム・匿名希望、いずれでも可）
+								<span class="text-red-600" aria-hidden="true">*</span>
+							</label>
+							<input
+								id="contribution-name"
+								name="contribution-name"
+								class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+								data-required
+							/>
+						</div>
+						<div>
+							<label for="contribution-email" class="block font-bold">メールアドレス</label>
+							<input
+								id="contribution-email"
+								name="contribution-email"
+								type="email"
+								class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+								data-required
+							/>
+						</div>
+						<div>
+							<label for="contribution-title" class="block font-bold">
+								タイトル
+								<span class="text-red-600" aria-hidden="true">*</span>
+							</label>
+							<input
+								id="contribution-title"
+								name="contribution-title"
+								class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+								data-required
+							/>
+						</div>
+						<div>
+							<label for="contribution-body" class="block font-bold">
+								本文（原稿が確認できるURLでも可）
+								<span class="text-red-600" aria-hidden="true">*</span>
+							</label>
+							<textarea
+								id="contribution-body"
+								name="contribution-body"
+								rows="8"
+								class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+								data-required
+							></textarea>
+						</div>
+						<div>
+							<label for="contribution-notes" class="block font-bold">その他、質問・要望・相談などあればご記入ください。</label>
+							<textarea
+								id="contribution-notes"
+								name="contribution-notes"
+								rows="5"
+								class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+							></textarea>
+						</div>
+					</div>
+				</div>
+				<div data-kinds="member" class="space-y-7">
+					<p class="text-sm text-[var(--muted)]">
+						お手数をおかけしますが、ご応募の際には下記の項目すべてへのご記入をお願いいたします。
+					</p>
+					<div>
+						<label for="member-name" class="block font-bold">
+							お名前・ハンドルネーム
+							<span class="text-red-600" aria-hidden="true">*</span>
+						</label>
+						<input
+							id="member-name"
+							name="member-name"
+							class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+							data-required
+						/>
+					</div>
+					<div>
+						<label for="member-email" class="block font-bold">
+							連絡用メールアドレス
+							<span class="text-red-600" aria-hidden="true">*</span>
+						</label>
+						<input
+							id="member-email"
+							name="member-email"
+							type="email"
+							class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+							data-required
+						/>
+					</div>
+					<div>
+						<label for="member-note-id" class="block font-bold">
+							noteアカウント
+							<span class="text-red-600" aria-hidden="true">*</span>
+						</label>
+						<p class="mt-1 text-sm text-[var(--muted)]">アカウントID（@以降）またはプロフィールURLをご記入ください。</p>
+						<input
+							id="member-note-id"
+							name="member-note-id"
+							class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+							placeholder="例: neet_magazine または https://note.com/neet_magazine"
+							data-required
+						/>
+					</div>
+					<div>
+						<label for="member-discord-id" class="block font-bold">
+							Discordユーザー名
+							<span class="text-red-600" aria-hidden="true">*</span>
+						</label>
+						<p class="mt-1 text-sm text-[var(--muted)]">ユーザー名（例: username）をご記入ください。</p>
+						<input
+							id="member-discord-id"
+							name="member-discord-id"
+							class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+							placeholder="例: username"
+							data-required
+						/>
+					</div>
+					<div>
+						<label for="member-neet-history" class="block font-bold">
+							ニート経歴（自己紹介）
+							<span class="text-red-600" aria-hidden="true">*</span>
+						</label>
+						<textarea
+							id="member-neet-history"
+							name="member-neet-history"
+							rows="4"
+							class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3 placeholder:text-[var(--muted)]"
+							placeholder="例：3年ほどガチニートをしています／最低限だけ働いているフリーターです／サラリーマンですが働きたくないです　など"
+							data-required
+						></textarea>
+					</div>
+					<fieldset data-kinds="member" data-required-group class="border-0 p-0">
+						<legend class="block font-bold">
+							確認事項
+							<span class="text-red-600" aria-hidden="true">*</span>
+						</legend>
+						<p class="mt-1 text-sm text-[var(--muted)]">
+							ご応募にあたり、あらかじめ下記ページの内容をご確認いただけますようお願いいたします。
+						</p>
+						<label class="mt-3 flex items-start gap-2">
+							<input
+								type="checkbox"
+								id="member-qa-confirmed"
+								name="member-qa-confirmed"
+								class="mt-1 size-4 shrink-0"
+							/>
+							<span>
+								<a href="/about" class="underline">ニートマガジンの活動内容</a>と<a href="/qa" class="underline">Q&amp;A</a>を確認しました
+							</span>
+						</label>
+					</fieldset>
+					<div>
+						<label for="member-magazine-impression" class="block font-bold">
+							冊子版ニートマガジンを読んだ感想
+							<span class="text-red-600" aria-hidden="true">*</span>
+						</label>
+						<p class="mt-1 text-sm text-[var(--muted)]">
+							一読いただき、全体の雰囲気を把握いただければ十分です。ご感想に正解はありません。批判や異なる視点からのご意見も歓迎いたします。
+						</p>
+						<textarea
+							id="member-magazine-impression"
+							name="member-magazine-impression"
+							rows="5"
+							class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+							data-required
+						></textarea>
+					</div>
+					<div>
+						<label for="member-sample-article" class="block font-bold">
+							サンプル記事
+							<span class="text-red-600" aria-hidden="true">*</span>
+						</label>
+						<p class="mt-1 text-sm text-[var(--muted)]">
+							執筆予定の記事、または執筆スタイルが伝わるサンプル記事をご提出ください。noteやブログへの投稿済み記事、過去の記事でも構いません。URLまたは本文のいずれかの形式でご記入ください。
+						</p>
+						<textarea
+							id="member-sample-article"
+							name="member-sample-article"
+							rows="8"
+							class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+							placeholder="記事のURL、または本文をここに貼り付けてください"
+							data-required
+						></textarea>
+					</div>
+				</div>
+				<div data-kinds="survey">
+					<p class="text-sm text-[var(--muted)]">このフォームは完全匿名です。ご自由にご記入ください。</p>
+				</div>
+				<fieldset data-kinds="survey" data-required-group class="border-0 p-0">
+					<legend class="block font-bold">
+						お読みになった号をお選びください（複数可）。
+						<span class="text-red-600" aria-hidden="true">*</span>
+					</legend>
+					<div class="mt-3 space-y-2">
+						<label class="flex items-center gap-2">
+							<input type="checkbox" name="survey-volumes" value="vol1" class="size-4" />
+							vol.1
+						</label>
+						<label class="flex items-center gap-2">
+							<input type="checkbox" name="survey-volumes" value="vol2" class="size-4" />
+							vol.2
+						</label>
+						<label class="flex items-center gap-2">
+							<input type="checkbox" name="survey-volumes" value="vol3" class="size-4" />
+							vol.3
+						</label>
+						<label class="flex items-center gap-2">
+							<input type="checkbox" name="survey-volumes" value="vol4" class="size-4" />
+							vol.4
+						</label>
+						<label class="flex items-center gap-2">
+							<input type="checkbox" name="survey-volumes" value="vol5" class="size-4" />
+							vol.5
+						</label>
+					</div>
+				</fieldset>
+				<div data-kinds="survey" id="survey-impression-picker" class="space-y-4">
+					<p class="font-bold">
+						特に印象に残った作品をご記入ください。
+						<span class="text-red-600" aria-hidden="true">*</span>
+					</p>
+					<div>
+						<label for="survey-impression-article" class="block font-bold">印象に残った作品を選ぶ（複数可）</label>
+						<select
+							id="survey-impression-article"
+							class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+							disabled
+						>
+							<option value="">先に上の「お読みになった号」にチェックを入れてください</option>
+						</select>
+						<p class="mt-2 text-sm text-[var(--muted)]">ドロップダウンから選ぶと、下の一覧に追加されます。</p>
+					</div>
+					<div id="survey-impression-selected" hidden>
+						<p class="font-bold">選択した作品</p>
+						<ul id="survey-impression-selected-list" class="mt-2 space-y-2"></ul>
+					</div>
+					<div id="survey-impression-hidden-inputs" hidden></div>
+				</div>
+				<div data-kinds="survey">
+					<label for="survey-impression-feedback" class="block font-bold text-[var(--muted)]">
+						また、その作品に対する感想や意見があればご記入ください。
+					</label>
+					<textarea
+						id="survey-impression-feedback"
+						name="survey-impression-feedback"
+						rows="5"
+						class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+					></textarea>
+				</div>
+				<div data-kinds="survey">
+					<label for="survey-overall" class="block font-bold">
+						ニートマガジン全体に対する感想／意見／批判があればご記入ください。
+					</label>
+					<textarea
+						id="survey-overall"
+						name="survey-overall"
+						rows="5"
+						class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+					></textarea>
+				</div>
+				<div data-kinds="survey">
+					<label for="survey-themes" class="block font-bold">
+						今後取り上げてほしい内容や特集テーマがあればご記入ください。
+					</label>
+					<textarea
+						id="survey-themes"
+						name="survey-themes"
+						rows="5"
+						class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+					></textarea>
+				</div>
+				<div data-kinds="survey">
+					<label for="survey-guests" class="block font-bold">
+						今後ニートマガジンでコラボしてほしいスペシャルゲストの方がいればご記入ください。
+					</label>
+					<textarea
+						id="survey-guests"
+						name="survey-guests"
+						rows="5"
+						class="mt-2 w-full border border-[var(--line)] bg-[var(--page)] p-3"
+					></textarea>
+				</div>
+				<button
+					id="submit-btn"
+					class="border border-[var(--ink)] px-6 py-3 font-bold disabled:cursor-not-allowed disabled:opacity-40"
+					type="submit"
+					disabled
+				>
+					内容を確認する
+				</button>
+				<p id="form-status" class="text-sm" aria-live="polite"></p>
+			</div>
+		</form>
+		<div id="contact-review" class="mt-12 max-w-2xl space-y-6" hidden>
+			<h2 class="text-xl font-bold">送信内容の確認</h2>
+			<p class="text-sm text-[var(--muted)]">内容をご確認のうえ、「送信する」を押してください。</p>
+			<dl id="contact-review-list" class="space-y-4 border border-[var(--line)] p-4"></dl>
+			<div class="flex flex-wrap gap-3">
+				<button
+					id="review-edit-btn"
+					type="button"
+					class="border border-[var(--line)] px-6 py-3 font-bold"
+				>
+					入力に戻る
+				</button>
+				<button
+					id="review-send-btn"
+					type="button"
+					class="border border-[var(--ink)] px-6 py-3 font-bold disabled:cursor-not-allowed disabled:opacity-40"
+				>
+					送信する
+				</button>
+			</div>
+			<p id="review-status" class="text-sm" aria-live="polite"></p>
+		</div>
+		<div id="contact-success" class="mt-12 max-w-2xl space-y-4" hidden>
+			<h2 class="text-xl font-bold">送信が完了しました</h2>
+			<p class="text-[var(--muted)]">お問い合わせありがとうございます。内容を確認のうえ、必要に応じてご連絡いたします。</p>
+		</div>
+	</section>
+	<script define:vars={{ contributionOpen: CONTRIBUTION_OPEN, surveyArticleCatalog }}>
+		import {
+			formatContactReview,
+			parseContactForm,
+			submitContact,
+		} from '../lib/contact';
+
+		const form = document.querySelector('#contact-form');
+		const kind = document.querySelector('#kind');
+		const fields = document.querySelector('#contact-fields');
+		const submitBtn = document.querySelector('#submit-btn');
+		const status = document.querySelector('#form-status');
+		const closedNotice = document.querySelector('#contribution-closed-notice');
+		const contributionFields = document.querySelector('#contribution-fields');
+		const fieldGroups = document.querySelectorAll('[data-kinds]');
+		const impressionArticleSelect = document.querySelector('#survey-impression-article');
+		const impressionSelected = document.querySelector('#survey-impression-selected');
+		const impressionSelectedList = document.querySelector('#survey-impression-selected-list');
+		const impressionHiddenInputs = document.querySelector('#survey-impression-hidden-inputs');
+		const reviewPanel = document.querySelector('#contact-review');
+		const reviewList = document.querySelector('#contact-review-list');
+		const reviewEditBtn = document.querySelector('#review-edit-btn');
+		const reviewSendBtn = document.querySelector('#review-send-btn');
+		const reviewStatus = document.querySelector('#review-status');
+		const successPanel = document.querySelector('#contact-success');
+		const selectedImpressionArticles = new Set();
+		let pendingSubmission = null;
+
+		const isContributionClosed = () => kind?.value === 'contribution' && !contributionOpen;
+
+		const getArticleLabel = (article) => `${article.volumeLabel} > ${article.title}`;
+
+		const getCheckedReadVolumes = () =>
+			Array.from(form?.querySelectorAll('input[name="survey-volumes"]:checked') ?? []).map((checkbox) => checkbox.value);
+
+		const pruneImpressionSelections = () => {
+			const checkedVolumes = new Set(getCheckedReadVolumes());
+			for (const articleId of [...selectedImpressionArticles]) {
+				const article = surveyArticleCatalog.find((item) => item.id === articleId);
+				if (!article || !checkedVolumes.has(article.volume)) {
+					selectedImpressionArticles.delete(articleId);
+				}
+			}
+		};
+
+		const syncImpressionHiddenInputs = () => {
+			if (!impressionHiddenInputs) return;
+			impressionHiddenInputs.replaceChildren(
+				...Array.from(selectedImpressionArticles).map((articleId) => {
+					const input = document.createElement('input');
+					input.type = 'hidden';
+					input.name = 'survey-impression-articles';
+					input.value = articleId;
+					return input;
+				}),
+			);
+		};
+
+		const renderImpressionDropdown = () => {
+			if (!impressionArticleSelect) return;
+
+			const checkedVolumes = getCheckedReadVolumes();
+			impressionArticleSelect.replaceChildren();
+
+			const placeholder = document.createElement('option');
+			placeholder.value = '';
+			if (checkedVolumes.length === 0) {
+				placeholder.textContent = '先に上の「お読みになった号」にチェックを入れてください';
+				impressionArticleSelect.disabled = true;
+				impressionArticleSelect.appendChild(placeholder);
+				return;
+			}
+
+			placeholder.textContent = 'ここから作品を選んでください';
+			impressionArticleSelect.appendChild(placeholder);
+			impressionArticleSelect.disabled = false;
+
+			for (const volume of checkedVolumes) {
+				const articles = surveyArticleCatalog.filter(
+					(article) => article.volume === volume && !selectedImpressionArticles.has(article.id),
+				);
+				if (articles.length === 0) continue;
+
+				const group = document.createElement('optgroup');
+				group.label = articles[0].volumeLabel;
+				for (const article of articles) {
+					const option = document.createElement('option');
+					option.value = article.id;
+					option.textContent = article.title;
+					group.appendChild(option);
+				}
+				impressionArticleSelect.appendChild(group);
+			}
+		};
+
+		const renderSelectedImpressionArticles = () => {
+			if (!impressionSelected || !impressionSelectedList) return;
+
+			const selected = surveyArticleCatalog.filter((article) => selectedImpressionArticles.has(article.id));
+			impressionSelected.hidden = selected.length === 0;
+			impressionSelectedList.replaceChildren(
+				...selected.map((article) => {
+					const item = document.createElement('li');
+					item.className = 'flex items-start justify-between gap-3 border border-[var(--line)] p-3';
+					item.innerHTML = `<span>${getArticleLabel(article)}</span>`;
+					const removeBtn = document.createElement('button');
+					removeBtn.type = 'button';
+					removeBtn.className = 'shrink-0 text-sm text-[var(--muted)] underline';
+					removeBtn.textContent = '削除';
+					removeBtn.addEventListener('click', () => {
+						selectedImpressionArticles.delete(article.id);
+						renderImpressionDropdown();
+						renderSelectedImpressionArticles();
+						syncImpressionHiddenInputs();
+						updateSubmitState();
+					});
+					item.appendChild(removeBtn);
+					return item;
+				}),
+			);
+		};
+
+		const syncImpressionPicker = () => {
+			pruneImpressionSelections();
+			renderImpressionDropdown();
+			renderSelectedImpressionArticles();
+			syncImpressionHiddenInputs();
+		};
+
+		const resetImpressionPicker = () => {
+			selectedImpressionArticles.clear();
+			if (impressionArticleSelect) impressionArticleSelect.value = '';
+			syncImpressionPicker();
+		};
+
+		const hasImpressionArticles = () => {
+			if (kind?.value !== 'survey') return true;
+			return selectedImpressionArticles.size > 0;
+		};
+
+		const syncContributionClosed = () => {
+			const contributionClosed = isContributionClosed();
+
+			if (closedNotice) closedNotice.hidden = !contributionClosed;
+			if (!contributionFields) return;
+
+			contributionFields.classList.toggle('opacity-40', contributionClosed);
+			contributionFields.classList.toggle('pointer-events-none', contributionClosed);
+			contributionFields.querySelectorAll('input, textarea, select').forEach((el) => {
+				el.disabled = contributionClosed;
+			});
+		};
+
+		const syncRequired = () => {
+			const selected = kind?.value ?? '';
+			const contributionClosed = isContributionClosed();
+
+			fieldGroups.forEach((group) => {
+				const kinds = group.dataset.kinds?.split(' ') ?? [];
+				const visible = Boolean(selected) && kinds.includes(selected);
+				group.hidden = !visible;
+
+				group.querySelectorAll('[data-required]').forEach((input) => {
+					if (visible && !(selected === 'contribution' && contributionClosed)) {
+						input.setAttribute('required', '');
+					} else {
+						input.removeAttribute('required');
+					}
+				});
+			});
+
+			syncContributionClosed();
+		};
+
+		const hasRequiredGroupValue = () => {
+			const visibleGroups = Array.from(fieldGroups).filter((group) => !group.hidden && group.hasAttribute('data-required-group'));
+			return visibleGroups.every((group) => {
+				const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+				return Array.from(checkboxes).some((checkbox) => checkbox.checked);
+			});
+		};
+
+		const isFormValid = () => {
+			if (!kind?.value || !fields || fields.hidden) return false;
+			if (isContributionClosed()) return false;
+			if (!hasRequiredGroupValue()) return false;
+			if (!hasImpressionArticles()) return false;
+			const inputs = fields.querySelectorAll('[required]');
+			return Array.from(inputs).every((input) => input.validity.valid && input.value.trim() !== '');
+		};
+
+		const updateSubmitState = () => {
+			syncRequired();
+			if (submitBtn) submitBtn.disabled = !isFormValid();
+		};
+
+		kind?.addEventListener('change', () => {
+			if (fields) fields.hidden = !kind.value;
+			if (status) status.textContent = '';
+			if (kind.value === 'survey') syncImpressionPicker();
+			if (kind.value !== 'survey') resetImpressionPicker();
+			updateSubmitState();
+		});
+
+		impressionArticleSelect?.addEventListener('change', () => {
+			const articleId = impressionArticleSelect.value;
+			if (!articleId) return;
+			selectedImpressionArticles.add(articleId);
+			impressionArticleSelect.value = '';
+			syncImpressionPicker();
+			updateSubmitState();
+		});
+
+		form?.addEventListener('input', updateSubmitState);
+		form?.addEventListener('change', (event) => {
+			if (event.target instanceof HTMLInputElement && event.target.name === 'survey-volumes') {
+				syncImpressionPicker();
+			}
+			updateSubmitState();
+		});
+
+		const hideReview = () => {
+			if (reviewPanel) reviewPanel.hidden = true;
+			if (reviewStatus) reviewStatus.textContent = '';
+			pendingSubmission = null;
+		};
+
+		const showReview = (submission) => {
+			if (!reviewPanel || !reviewList) return;
+
+			pendingSubmission = submission;
+			reviewList.replaceChildren(
+				...formatContactReview(submission).map((item) => {
+					const wrapper = document.createElement('div');
+					const term = document.createElement('dt');
+					term.className = 'font-bold';
+					term.textContent = item.label;
+					const description = document.createElement('dd');
+					description.className = 'mt-1 whitespace-pre-wrap text-[var(--muted)]';
+					description.textContent = item.value;
+					wrapper.append(term, description);
+					return wrapper;
+				}),
+			);
+
+			if (form) form.hidden = true;
+			if (successPanel) successPanel.hidden = true;
+			reviewPanel.hidden = false;
+			if (status) status.textContent = '';
+			reviewPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		};
+
+		const showSuccess = () => {
+			if (form) form.hidden = true;
+			if (reviewPanel) reviewPanel.hidden = true;
+			if (successPanel) successPanel.hidden = false;
+			successPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		};
+
+		const returnToForm = () => {
+			hideReview();
+			if (form) form.hidden = false;
+			if (successPanel) successPanel.hidden = true;
+			if (status) status.textContent = '';
+		};
+
+		form?.addEventListener('submit', (event) => {
+			event.preventDefault();
+			updateSubmitState();
+			if (!isFormValid()) {
+				if (status) status.textContent = '必須項目を確認してください。';
+				form.reportValidity();
+				return;
+			}
+
+			try {
+				const submission = parseContactForm(new FormData(form), { surveyArticleCatalog });
+				showReview(submission);
+			} catch (error) {
+				if (status) {
+					status.textContent = error instanceof Error ? error.message : '送信内容の確認に失敗しました。';
+				}
+			}
+		});
+
+		reviewEditBtn?.addEventListener('click', returnToForm);
+
+		reviewSendBtn?.addEventListener('click', async () => {
+			if (!pendingSubmission || !reviewSendBtn) return;
+
+			reviewSendBtn.setAttribute('disabled', 'true');
+			if (reviewStatus) reviewStatus.textContent = '送信中です…';
+
+			const result = await submitContact(pendingSubmission);
+
+			reviewSendBtn.removeAttribute('disabled');
+
+			if (!result.accepted) {
+				if (reviewStatus) reviewStatus.textContent = result.message;
+				return;
+			}
+
+			showSuccess();
+		});
+	</script>
+</BaseLayout>

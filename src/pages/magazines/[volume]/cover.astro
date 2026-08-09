@@ -1,0 +1,30 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import AuthorAfterword from '../../../components/AuthorAfterword.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+	const magazines = await getCollection('magazines', ({ data }) => Boolean(data.coverAfterword && data.coverArtist));
+	return magazines.map((magazine) => ({
+		params: { volume: magazine.data.volume },
+		props: { magazine },
+	}));
+}
+
+const { magazine } = Astro.props;
+const authorEntry = magazine.data.coverArtistId
+	? await getEntry('authors', magazine.data.coverArtistId)
+	: undefined;
+---
+
+<BaseLayout title={`表紙イラスト ${magazine.data.coverArtist} | ${magazine.data.title}`}>
+	<section class="shell py-16 md:py-24">
+		<AuthorAfterword
+			penName={magazine.data.coverArtist!}
+			afterword={magazine.data.coverAfterword!}
+			avatar={authorEntry?.data.avatar}
+			links={authorEntry?.data.links}
+		/>
+		<a class="mt-12 inline-block" href={`/magazines/${magazine.data.volume}`}>← {magazine.data.volume} へ戻る</a>
+	</section>
+</BaseLayout>

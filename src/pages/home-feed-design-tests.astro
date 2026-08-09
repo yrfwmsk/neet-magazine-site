@@ -1,0 +1,353 @@
+---
+import { getCollection } from 'astro:content';
+import ArchiveCard from '../components/ArchiveCard.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { VOLUME_ACCENTS } from '../lib/accent-test';
+import { formatDate, getEventDateKey, getTokyoDateKey } from '../lib/date';
+
+const [magazines, events] = await Promise.all([getCollection('magazines'), getCollection('events')]);
+const latestMagazine = magazines.sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf())[0];
+const accent = latestMagazine
+	? (VOLUME_ACCENTS[latestMagazine.data.volume] ?? latestMagazine.data.accentColor ?? '#751F32')
+	: '#751F32';
+const magHref = latestMagazine ? `/magazines/${latestMagazine.data.volume}` : '#';
+const feature = latestMagazine?.data.featureTitle ?? '';
+const guests = latestMagazine?.data.guests ?? [];
+const pub = latestMagazine ? formatDate(latestMagazine.data.publishedAt) : '';
+const arch = latestMagazine?.data.archiveAt ? formatDate(latestMagazine.data.archiveAt) : '';
+
+const EVENT_MARK_COLOR = '#1F1C1D';
+const todayKey = getTokyoDateKey();
+const latestEvent =
+	events
+		.map((event) => ({
+			dateKey: getEventDateKey(event.data.date),
+			date: event.data.date,
+			title: event.data.title,
+			place: event.data.place,
+			booth: event.data.booth,
+			href: `/events/${event.id}`,
+			meta: formatDate(event.data.date),
+		}))
+		.sort((a, b) => a.dateKey.localeCompare(b.dateKey))
+		.find((item) => item.dateKey >= todayKey) ?? null;
+
+const datesHtml =
+	arch
+		? `<span class="home-feed__latest-dates"><span>発売日</span><span>${pub}</span><span>デジタルアーカイブ公開</span><span>${arch}</span></span>`
+		: `<span class="home-feed__latest-dates"><span></span><span>${pub}</span></span>`;
+
+const descCurrent = [
+	feature
+		? `<span class="home-feed__latest-block"><span class="home-feed__latest-label">特集</span><span class="home-feed__latest-feature">${feature}</span></span>`
+		: '',
+	guests.length
+		? `<span class="home-feed__latest-row"><span class="home-feed__latest-block"><span class="home-feed__latest-label">スペシャルゲスト</span><span class="home-feed__latest-guests">${guests.join('　')}</span></span>${datesHtml}</span>`
+		: `<span class="home-feed__latest-row home-feed__latest-row--dates-only">${datesHtml}</span>`,
+]
+	.filter(Boolean)
+	.join('');
+
+const eventDesc = latestEvent
+	? latestEvent.booth
+		? `${latestEvent.place}<br />ブース【${latestEvent.booth}】`
+		: latestEvent.place
+	: '';
+
+const variants = [
+	{
+		id: 'a',
+		title: 'A · 現行',
+		blurb: 'いまのトップと同じ。特集／ゲストを大きく、日付はゲスト行の右。',
+		ratio: '2.1fr_1fr',
+		latestMod: '',
+		eventMod: '',
+	},
+	{
+		id: 'b',
+		title: 'B · 特集をさらに大きく',
+		blurb: '特集名の字階を一段上げ、ゲストは少し抑える。号タイトルはさらに小さく。',
+		ratio: '2.1fr_1fr',
+		latestMod: 'feed-test--feature-hero',
+		eventMod: '',
+	},
+	{
+		id: 'c',
+		title: 'C · 日付は下段右',
+		blurb: 'ゲスト行はゲストだけ。日付はカード最下段に右寄せで戻す。',
+		ratio: '2.1fr_1fr',
+		latestMod: 'feed-test--dates-bottom',
+		eventMod: '',
+	},
+	{
+		id: 'd',
+		title: 'D · イベントもラベル構造',
+		blurb: '次回イベント側も「場所／ブース」のラベル＋本文に揃え、左右の読み方を共通化。',
+		ratio: '2.1fr_1fr',
+		latestMod: '',
+		eventMod: 'feed-test--event-labeled',
+	},
+	{
+		id: 'e',
+		title: 'E · 幅バランス寄せ',
+		blurb: '最新号：イベントを 1.55:1 に。最新号の読み幅をやや抑え、イベントを読みやすく。',
+		ratio: '1.55fr_1fr',
+		latestMod: '',
+		eventMod: '',
+	},
+	{
+		id: 'f',
+		title: 'F · ブースをイベントの主役に',
+		blurb: 'イベントはブース番号を大きく。場所は小さく。最新号は現行構造のまま。',
+		ratio: '2.1fr_1fr',
+		latestMod: '',
+		eventMod: 'feed-test--booth-hero',
+	},
+	{
+		id: 'g',
+		title: 'G · 号タイトル省略',
+		blurb: '「ニートマガジン Vol.5」を消し、特集名を先頭に。eyebrow「最新号」が号の役割を担う。',
+		ratio: '2.1fr_1fr',
+		latestMod: 'feed-test--no-issue-title',
+		eventMod: '',
+	},
+	{
+		id: 'h',
+		title: 'H · 1カラム縦積み',
+		blurb: 'モバイル想定の縦並び。最新号→次回イベントの優先順をはっきりさせる。',
+		ratio: '1fr',
+		latestMod: '',
+		eventMod: '',
+		stack: true,
+	},
+] as const;
+---
+
+<BaseLayout title="最新号／次回イベント デザイン案 | ニートマガジン">
+	<section class="shell py-12 md:py-16">
+		<p class="eyebrow">HOME / FEED DESIGN</p>
+		<h1 class="mt-3 text-3xl font-black md:text-4xl">最新号／次回イベントの改善案</h1>
+		<p class="mt-4 max-w-2xl text-[var(--muted)]">
+			現行方針（特集・ゲストを主役、正方形共通、日付は桁揃え）をベースにした比較です。気に入った ID を教えてください。
+		</p>
+		<p class="mt-2"><a href="/">← トップへ戻る</a></p>
+
+		<nav class="feed-test-nav mt-8">
+			{variants.map((v) => (
+				<a href={`#${v.id}`}>{v.id.toUpperCase()}</a>
+			))}
+		</nav>
+
+		<div class="feed-test-list mt-10">
+			{variants.map((variant) => {
+				const latestDesc =
+					variant.id === 'c'
+						? [
+								feature
+									? `<span class="home-feed__latest-block"><span class="home-feed__latest-label">特集</span><span class="home-feed__latest-feature">${feature}</span></span>`
+									: '',
+								guests.length
+									? `<span class="home-feed__latest-block"><span class="home-feed__latest-label">スペシャルゲスト</span><span class="home-feed__latest-guests">${guests.join('　')}</span></span>`
+									: '',
+							]
+								.filter(Boolean)
+								.join('')
+						: descCurrent;
+
+				const latestMeta =
+					variant.id === 'c'
+						? `<span class="home-feed__latest-dates">${arch ? `<span>発売日</span><span>${pub}</span><span>デジタルアーカイブ公開</span><span>${arch}</span>` : `<span></span><span>${pub}</span>`}</span>`
+						: undefined;
+
+				const latestTitle =
+					variant.id === 'g' ? (feature || latestMagazine?.data.title || '') : (latestMagazine?.data.title ?? '');
+
+				const latestDescription =
+					variant.id === 'g'
+						? [
+								`<span class="home-feed__latest-block"><span class="home-feed__latest-label">特集</span><span class="home-feed__latest-feature">${feature}</span></span>`,
+								guests.length
+									? `<span class="home-feed__latest-row"><span class="home-feed__latest-block"><span class="home-feed__latest-label">スペシャルゲスト</span><span class="home-feed__latest-guests">${guests.join('　')}</span></span>${datesHtml}</span>`
+									: '',
+							]
+								.filter(Boolean)
+								.join('')
+						: latestDesc;
+
+				const eventDescription =
+					variant.id === 'd' && latestEvent
+						? `<span class="home-feed__latest-block"><span class="home-feed__latest-label">場所</span><span class="feed-test__event-place">${latestEvent.place}</span></span>${
+								latestEvent.booth
+									? `<span class="home-feed__latest-block"><span class="home-feed__latest-label">ブース</span><span class="feed-test__event-booth">【${latestEvent.booth}】</span></span>`
+									: ''
+							}`
+						: variant.id === 'f' && latestEvent
+							? latestEvent.booth
+								? `<span class="feed-test__booth-hero">【${latestEvent.booth}】</span><span class="feed-test__booth-place">${latestEvent.place}</span>`
+								: latestEvent.place
+							: eventDesc;
+
+				return (
+					<section class="feed-test-item" id={variant.id}>
+						<header class="feed-test-item__head">
+							<h2 class="feed-test-item__title m-0">{variant.title}</h2>
+							<p class="feed-test-item__blurb m-0">{variant.blurb}</p>
+						</header>
+
+						<div
+							class:list={[
+								'home-feed',
+								'feed-test-pair',
+								variant.latestMod,
+								variant.eventMod,
+								variant.stack && 'feed-test-pair--stack',
+							]}
+							style={
+								variant.stack
+									? undefined
+									: `--feed-cols: minmax(0, ${variant.ratio.split('_')[0]}) minmax(0, ${variant.ratio.split('_')[1] ?? '1fr'})`
+							}
+						>
+							<div class="home-feed__col home-feed__col--latest">
+								<p class="eyebrow">最新号</p>
+								{latestMagazine && (
+									<ArchiveCard
+										title={variant.id === 'g' ? latestTitle : latestMagazine.data.title}
+										description={latestDescription}
+										href={magHref}
+										meta={latestMeta}
+										accentColor={accent}
+										volume={latestMagazine.data.volume}
+									/>
+								)}
+							</div>
+							<div class="home-feed__col home-feed__col--event">
+								<p class="eyebrow">次回イベント</p>
+								{latestEvent ? (
+									<ArchiveCard
+										title={latestEvent.title}
+										description={eventDescription}
+										href={latestEvent.href}
+										meta={variant.id === 'd' || variant.id === 'f' ? latestEvent.meta : latestEvent.meta}
+										accentColor={EVENT_MARK_COLOR}
+										markDate={latestEvent.date}
+									/>
+								) : (
+									<p class="mt-4 text-sm text-[var(--muted)]">近日の出店予定はありません。</p>
+								)}
+							</div>
+						</div>
+					</section>
+				);
+			})}
+		</div>
+	</section>
+</BaseLayout>
+
+<style is:global>
+	.feed-test-nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1rem;
+		font-size: 0.85rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+	}
+	.feed-test-list {
+		display: grid;
+		gap: 3rem;
+	}
+	.feed-test-item__head {
+		margin-bottom: 0.75rem;
+	}
+	.feed-test-item__title {
+		font-size: 1.1rem;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+	}
+	.feed-test-item__blurb {
+		color: var(--muted);
+		font-size: 0.88rem;
+		line-height: 1.55;
+		margin-top: 0.25rem;
+	}
+	.feed-test-pair {
+		display: grid;
+		gap: 1rem 1.25rem;
+		grid-template-columns: var(--feed-cols, minmax(0, 2.1fr) minmax(0, 1fr));
+	}
+	.feed-test-pair--stack {
+		grid-template-columns: 1fr;
+	}
+
+	/* B · 特集をさらに大きく */
+	.feed-test--feature-hero.home-feed .home-feed__col--latest .archive-card__title {
+		font-size: 0.82rem;
+		opacity: 0.75;
+	}
+	.feed-test--feature-hero .home-feed__latest-feature {
+		font-size: clamp(1.4rem, 3vw, 1.75rem);
+		line-height: 1.28;
+	}
+	.feed-test--feature-hero .home-feed__latest-guests {
+		font-size: clamp(0.95rem, 1.6vw, 1.1rem);
+	}
+
+	/* C · 日付下段 */
+	.feed-test--dates-bottom .home-feed__col--latest .archive-card__meta {
+		display: flex;
+		justify-content: flex-end;
+		padding-top: 0.7rem;
+	}
+
+	/* D · イベントもラベル */
+	.feed-test--event-labeled .home-feed__col--event .archive-card__desc {
+		color: var(--ink);
+		display: grid;
+		gap: 0.4rem;
+		margin-top: 0.4rem;
+	}
+	.feed-test__event-place {
+		font-size: 0.95rem;
+		font-weight: 700;
+		line-height: 1.4;
+	}
+	.feed-test__event-booth {
+		font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+		font-size: 1.15rem;
+		font-weight: 900;
+		letter-spacing: -0.02em;
+	}
+
+	/* F · ブース主役 */
+	.feed-test--booth-hero .home-feed__col--event .archive-card__desc {
+		color: var(--ink);
+		display: grid;
+		gap: 0.25rem;
+		margin-top: 0.35rem;
+	}
+	.feed-test__booth-hero {
+		font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+		font-size: clamp(1.5rem, 3vw, 1.9rem);
+		font-weight: 900;
+		letter-spacing: -0.04em;
+		line-height: 1.1;
+	}
+	.feed-test__booth-place {
+		color: var(--muted);
+		font-size: 0.82rem;
+		line-height: 1.4;
+	}
+
+	/* G · 号タイトル省略（特集をタイトル位置に） */
+	.feed-test--no-issue-title .home-feed__col--latest .archive-card__title {
+		font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+		font-size: clamp(1.2rem, 2.4vw, 1.45rem);
+		font-weight: 900;
+		letter-spacing: -0.03em;
+		line-height: 1.35;
+	}
+	.feed-test--no-issue-title .home-feed__latest-block:first-child {
+		display: none;
+	}
+</style>

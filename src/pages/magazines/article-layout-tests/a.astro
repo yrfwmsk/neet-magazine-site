@@ -1,0 +1,21 @@
+---
+import ArticleLayoutTestBody from '../../../components/ArticleLayoutTestBody.astro';
+import ArticleLayoutTestNav from '../../../components/ArticleLayoutTestNav.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="記事レイアウト · 案A | ニートマガジン">
+	<section class="shell py-16 md:py-24">
+		<p class="eyebrow">TEST A</p>
+		<h1 class="mt-4 text-3xl font-black md:text-4xl">一覧削除 · ヘッダー幅に揃える</h1>
+		<p class="mt-4 max-w-xl text-sm text-[var(--muted)]">
+			右サイドをやめ、本文コンテナをヘッダーと同じ shell（max 920px）に戻した案。号内ナビは号ページに任せる。
+		</p>
+		<ArticleLayoutTestNav current="a" />
+
+		<article class="mt-14 min-w-0">
+			<ArticleLayoutTestBody />
+			<a class="mt-12 inline-block" href="/magazines/vol2">← vol2 へ戻る</a>
+		</article>
+	</section>
+</BaseLayout>

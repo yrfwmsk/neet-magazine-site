@@ -1,0 +1,111 @@
+---
+import AccentTestNav from '../../../components/AccentTestNav.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getAccentTestMagazines } from '../../../lib/accent-test';
+import { formatDate } from '../../../lib/date';
+
+const magazines = await getAccentTestMagazines();
+---
+
+<BaseLayout title="アクセント案 D · 帯背景 | ニートマガジン">
+	<section class="shell py-16 md:py-24">
+		<p class="eyebrow">TEST D</p>
+		<h1 class="mt-4 text-3xl font-black md:text-4xl">帯背景アクセント</h1>
+		<p class="mt-4 max-w-xl text-sm text-[var(--muted)]">
+			左に幅広の色帯を置き、項目全体の高さで色を見せる案。背表紙をもう少し主張させたもの。
+		</p>
+		<AccentTestNav current="d" />
+
+		<div class="test-d mt-12">
+			{magazines.map((magazine) => (
+				<article class="test-d__item" style={`--accent: ${magazine.accentColor}`}>
+					<span class="test-d__band" aria-hidden="true"></span>
+					<div class="test-d__body">
+						<h2 class="test-d__title">
+							<a href={magazine.href}>{magazine.title}</a>
+						</h2>
+						<p class="test-d__desc">{magazine.summary}</p>
+						<p class="test-d__meta">{formatDate(magazine.publishedAt)}</p>
+					</div>
+				</article>
+			))}
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.test-d {
+		display: grid;
+		gap: 1.25rem 0;
+	}
+
+	@media (min-width: 768px) {
+		.test-d {
+			grid-template-columns: 1fr 1fr;
+			column-gap: 2.75rem;
+			row-gap: 1.5rem;
+		}
+	}
+
+	.test-d__item {
+		align-items: stretch;
+		display: flex;
+		gap: 0;
+		min-height: 7.5rem;
+		overflow: hidden;
+	}
+
+	.test-d__band {
+		background: var(--accent);
+		flex-shrink: 0;
+		width: 1.35rem;
+	}
+
+	.test-d__body {
+		background: color-mix(in srgb, var(--accent) 6%, var(--page));
+		border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+		border-left: 0;
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		justify-content: center;
+		min-width: 0;
+		padding: 1.15rem 1.15rem 1.2rem;
+	}
+
+	.test-d__title {
+		font-size: 1.1rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1.45;
+		margin: 0;
+	}
+
+	.test-d__desc {
+		color: var(--muted);
+		font-size: 0.88rem;
+		line-height: 1.65;
+		margin: 0.4rem 0 0;
+	}
+
+	.test-d__meta {
+		color: var(--muted);
+		font-size: 0.78rem;
+		margin: 0.7rem 0 0;
+	}
+
+	:global(:root[data-theme='dark']) .test-d__body {
+		background: color-mix(in srgb, var(--accent) 12%, var(--page));
+		border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
+	}
+
+	@media (min-width: 768px) {
+		.test-d__band {
+			width: 1.5rem;
+		}
+
+		.test-d__body {
+			padding: 1.25rem 1.35rem;
+		}
+	}
+</style>

@@ -1,0 +1,72 @@
+---
+import AccentTestNav from '../../../components/AccentTestNav.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getAccentTestMagazines } from '../../../lib/accent-test';
+import { formatDate } from '../../../lib/date';
+
+const magazines = await getAccentTestMagazines();
+---
+
+<BaseLayout title="アクセント案 A · 上線 | ニートマガジン">
+	<section class="shell py-16 md:py-24">
+		<p class="eyebrow">TEST A</p>
+		<h1 class="mt-4 text-3xl font-black md:text-4xl">上線アクセント</h1>
+		<p class="mt-4 max-w-xl text-sm text-[var(--muted)]">
+			各項目の上辺を号カラーの太線にする案。区切り線そのものが色の役割を持つ。
+		</p>
+		<AccentTestNav current="a" />
+
+		<div class="test-a mt-12">
+			{magazines.map((magazine) => (
+				<article class="test-a__item" style={`--accent: ${magazine.accentColor}`}>
+					<h2 class="test-a__title">
+						<a href={magazine.href}>{magazine.title}</a>
+					</h2>
+					<p class="test-a__desc">{magazine.summary}</p>
+					<p class="test-a__meta">{formatDate(magazine.publishedAt)}</p>
+				</article>
+			))}
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.test-a {
+		display: grid;
+		gap: 0;
+	}
+
+	@media (min-width: 768px) {
+		.test-a {
+			grid-template-columns: 1fr 1fr;
+			column-gap: 3.5rem;
+		}
+	}
+
+	.test-a__item {
+		border-top: 4px solid var(--accent);
+		padding: 1.35rem 0 2rem;
+	}
+
+	.test-a__title {
+		font-size: 1.15rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1.45;
+		margin: 0;
+	}
+
+	.test-a__desc {
+		color: var(--muted);
+		font-size: 0.9rem;
+		line-height: 1.7;
+		margin: 0.5rem 0 0;
+	}
+
+	.test-a__meta {
+		color: var(--muted);
+		font-size: 0.78rem;
+		letter-spacing: 0.02em;
+		margin: 0.9rem 0 0;
+	}
+</style>

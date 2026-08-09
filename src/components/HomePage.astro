@@ -1,0 +1,272 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Search from './Search.astro';
+import { isVolumeArchiveAvailable } from '../lib/archive';
+import { getDateParts, getEventDateKey, getTokyoDateKey } from '../lib/date';
+import { plainSearchText } from '../lib/search-text';
+
+const events = await getCollection('events');
+const magazines = await getCollection('magazines');
+const archiveAtByVolume = new Map(magazines.map((magazine) => [magazine.data.volume, magazine.data.archiveAt]));
+const articles = await getCollection('articles');
+const searchItems = articles
+	.filter((article) => isVolumeArchiveAvailable(article.data.volume, archiveAtByVolume))
+	.map((article) => ({
+	title: article.data.title,
+	author: article.data.author,
+	volume: article.data.volume,
+	body: plainSearchText(article.body),
+	href: `/magazines/${article.data.volume}/${article.id.split('/').at(-1)}`,
+}));
+const nextEvent = events
+	.map((event) => ({ event, key: getEventDateKey(event.data.date) }))
+	.filter(({ key }) => key >= getTokyoDateKey())
+	.sort((a, b) => a.key.localeCompare(b.key))[0]?.event;
+const eventDateParts = nextEvent ? getDateParts(nextEvent.data.date) : null;
+const eventHref = nextEvent ? `/events/${nextEvent.id}` : '/events';
+---
+
+<BaseLayout
+	description="「働きたくない」から始まるオルタナティブ・ライフ・マガジン。ニート、フリーター、会社員が肩書きを超えて集う、2020年代ニート・カルチャーの震源地。"
+>
+	<div class="study">
+		<section class="cover-hero">
+			<div class="cover-hero__copy">
+				<p class="data-label">NEET MAGAZINE / DIGITAL_ARCHIVE</p>
+				<h1>
+					<span class="copy-line copy-line--lead"><span class="copy-unit copy-unit--hang">「<span class="copy-open-gap" aria-hidden="true"></span>働きたくない」</span><span class="copy-unit">から</span><span class="copy-unit">始まる</span></span>
+					<span class="copy-line copy-line--magazine"><span class="copy-unit">オルタナティブ・</span><span class="copy-unit">ライフ・マガジン</span></span>
+				</h1>
+				<p class="cover-hero__lead">ニート/フリーター/会社員が肩書きを超えて集い<br />独自のニート論や実践的ノウハウを寄稿する<br />2020年代ニート・カルチャーの震源地です。</p>
+				<Search items={searchItems} variant="compact" />
+			</div>
+			<a class="cover-hero__visual" href="/magazines/vol5">
+				<div class="cover-hero__frame">
+					<img src="/images/covers/vol5-complete.png" alt="ニートマガジン Vol.5 表紙" />
+				</div>
+				<span class="cover-hero__release">最新号発売 2026年9月13日</span>
+			</a>
+		</section>
+
+	</div>
+
+	<section class="event-studies" aria-label="次のイベント">
+		{nextEvent ? (
+			<article class="event-option event-option--a">
+				<a href={eventHref}>
+					<p class="event-option__kicker">次のイベント</p>
+					<div
+						class="event-option__date-block"
+						aria-label={`${eventDateParts?.year}年${eventDateParts?.month}月${eventDateParts?.day}日`}
+					>
+						<span aria-hidden="true">{eventDateParts?.month}</span>
+						<i aria-hidden="true">/</i>
+						<span aria-hidden="true">{eventDateParts?.day}</span>
+					</div>
+					<div class="event-option__body">
+						<h2>{nextEvent.data.title}</h2>
+						<dl>
+							<div><dt>PLACE</dt><dd>{nextEvent.data.place}</dd></div>
+							<div><dt>BOOTH</dt><dd class="event-option__booth">{nextEvent.data.booth ? `【${nextEvent.data.booth}】` : '—'}</dd></div>
+						</dl>
+					</div>
+				</a>
+			</article>
+		) : (
+			<div class="event-option event-option--empty">
+				<p class="event-option__kicker">次のイベント</p>
+				<p>近日の出店予定はありません。<a href="/events">これまでの活動記録を見る</a></p>
+			</div>
+		)}
+	</section>
+</BaseLayout>
+
+<style>
+	:global(body:has(.study) > footer) { margin-top: 0; }
+	.study {
+		--red: #801b33;
+		max-width: 100%;
+	}
+	.study :where(h1, h2),
+	.event-option h2 {
+		overflow-wrap: normal;
+		text-wrap: balance;
+		word-break: keep-all;
+	}
+	.cover-hero__visual {
+		align-items: center;
+		background: var(--red);
+		color: white;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		justify-content: flex-start;
+		max-width: 100%;
+		min-width: 0;
+		overflow: hidden;
+		padding: 1rem;
+		position: relative;
+		text-decoration: none;
+	}
+	.cover-hero__frame {
+		align-items: center;
+		align-self: center;
+		display: flex;
+		flex: 1;
+		justify-content: center;
+		margin-inline: auto;
+		max-width: 88%;
+		min-height: 0;
+		width: min(88%, 100%);
+	}
+	.cover-hero__visual img {
+		box-shadow: 0 20px 55px #21050c55;
+		display: block;
+		height: auto;
+		margin-inline: auto;
+		max-height: min(465px, 100%);
+		max-width: 100%;
+		object-fit: contain;
+		object-position: center center;
+		transform: translateY(.75rem);
+		width: auto;
+	}
+	.cover-hero__release {
+		flex-shrink: 0;
+		font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+		font-size: clamp(1.05rem, 4.2vw, 1.4rem);
+		font-weight: 900;
+		letter-spacing: -.04em;
+		line-height: 1;
+		margin-top: .85rem;
+		padding-bottom: .15rem;
+		position: static;
+		transform: scaleX(.76);
+		transform-origin: center center;
+		white-space: nowrap;
+	}
+
+	.event-studies { display: grid; gap: 1.25rem; margin: .75rem auto 2.5rem; width: min(920px, calc(100% - 2.5rem)); }
+	.event-option { overflow: hidden; }
+	.event-option a { color: inherit; text-decoration: none; }
+	.event-option__kicker { font: 700 .68rem monospace; letter-spacing: .14em; margin: 0; }
+	.event-option h2 { font-size: clamp(1.35rem, 3.5vw, 2.15rem); line-height: 1.25; margin: 0; }
+
+	.event-option--a { background: #d9dedb; color: #17201d; }
+	.event-option--a > a { align-items: end; display: grid; gap: .8rem 1.2rem; grid-template-columns: auto minmax(0, 1fr); padding: 1.15rem 1.35rem 1.5rem; }
+	.event-option--a .event-option__kicker { grid-column: 1 / -1; }
+	.event-option__date-block { align-items: center; aspect-ratio: 1; background: #1f1c1d; color: #fff; display: flex; font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif; font-variant-numeric: tabular-nums; font-weight: 900; justify-content: center; letter-spacing: -.04em; line-height: 1; width: 5.5rem; }
+	.event-option__date-block span { font-size: 1.55rem; transform: scaleX(.78); }
+	.event-option__date-block i { font-size: 1.25rem; font-style: normal; margin-inline: -.08em; opacity: .55; position: relative; top: .02em; transform: scaleX(.78); }
+	:root[data-theme='dark'] .event-option__date-block {
+		background: #f5f2f2;
+		color: #1f1c1d;
+	}
+	.event-option--a dl { align-items: baseline; display: grid; gap: .35rem .1rem; grid-template-columns: 2.25rem minmax(0, 1fr); margin: .6rem 0 0; }
+	.event-option--a dl div { display: contents; }
+	.event-option--a dt { color: #37433f; font: 700 .62rem/1.4 monospace; }
+	.event-option--a dd { font-size: .82rem; font-weight: 700; line-height: 1.4; margin: 0; }
+	.event-option--a .event-option__booth { margin-left: -.5em; }
+
+	.event-option--empty { background: var(--panel); padding: 1.25rem; }
+
+	@supports (word-break: auto-phrase) {
+		.study :where(h1, h2),
+		.event-option h2 { word-break: auto-phrase; }
+	}
+
+	@media (max-width: 759px) {
+		.cover-hero {
+			gap: 0.75rem;
+			max-width: 100%;
+			min-width: 0;
+		}
+		.cover-hero__copy {
+			max-width: 100%;
+			min-width: 0;
+		}
+		.cover-hero h1 {
+			letter-spacing: -.04em;
+			max-width: 100%;
+			transform: none;
+		}
+		.cover-hero h1 .copy-line--lead {
+			margin-left: -.38em;
+			transform: scaleX(.97);
+			transform-origin: left center;
+		}
+		.cover-hero h1 .copy-line--lead .copy-unit--hang {
+			margin-left: 0;
+		}
+		.cover-hero h1 .copy-open-gap {
+			display: inline-block;
+			width: 0.06em;
+		}
+		.cover-hero h1 .copy-line--magazine {
+			display: block;
+			font-size: 1.12em;
+			letter-spacing: -.04em;
+			transform: scaleX(.85);
+			transform-origin: left center;
+			white-space: nowrap;
+			width: fit-content;
+		}
+		.cover-hero h1 .copy-line--magazine .copy-unit {
+			display: inline;
+			white-space: inherit;
+		}
+		.cover-hero__visual {
+			height: auto;
+			min-height: auto;
+			overflow: visible;
+			padding: 1.5rem 1.25rem 1rem;
+			touch-action: pan-y;
+			width: 100%;
+		}
+		.cover-hero__frame {
+			max-width: min(17rem, 84vw);
+			width: min(17rem, 84vw);
+		}
+		.cover-hero__visual img {
+			max-height: none;
+		}
+		.cover-hero__release {
+			margin-top: 1.25rem;
+		}
+		.event-studies {
+			margin: 1.25rem auto 1.5rem;
+			width: min(920px, calc(100% - 2.5rem));
+		}
+	}
+
+	/* 縦長スマホ: 表紙が画面を占有しすぎて下が届かないのを防ぐ */
+	@media (max-width: 759px) and (min-height: 860px) {
+		.cover-hero__visual img {
+			max-height: 38vh;
+		}
+	}
+
+	@media (min-width: 760px) {
+		:global(body:has(.study)) {
+			display: flex;
+			flex-direction: column;
+			min-height: 100dvh;
+		}
+		:global(body:has(.study) > header) {
+			flex-shrink: 0;
+		}
+		:global(body:has(.study) > main) {
+			flex: 1 0 auto;
+		}
+		:global(body:has(.study) > footer) {
+			flex-shrink: 0;
+			margin-top: auto;
+		}
+		.event-studies {
+			margin-bottom: 1.5rem;
+		}
+		.cover-hero { grid-template-columns: 1.05fr .95fr; }
+		.cover-hero__visual { min-height: min(535px, 65vh); }
+	}
+</style>

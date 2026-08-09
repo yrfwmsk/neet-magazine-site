@@ -1,0 +1,165 @@
+---
+import { getCollection } from 'astro:content';
+import ArchiveCard from '../../components/ArchiveCard.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { isArchiveAvailable } from '../../lib/archive';
+import { formatDate, formatDateJa } from '../../lib/date';
+import { emdashHtml } from '../../lib/emdash';
+
+export async function getStaticPaths() {
+	const magazines = await getCollection('magazines');
+	return magazines.map((magazine) => ({ params: { volume: magazine.data.volume } }));
+}
+const { volume } = Astro.params;
+const magazine = (await getCollection('magazines')).find((m) => m.data.volume === volume)!;
+const articles = (await getCollection('articles', ({ data }) => data.volume === magazine.data.volume))
+	.sort((a, b) => a.data.order - b.data.order);
+const { cover, coverArtist, coverAfterword, pdfPath, featureTitle, emergencyFeatureTitle, guests, archiveAt } = magazine.data;
+const archiveAvailable = isArchiveAvailable(archiveAt);
+const showFeatureHighlight = ['vol3', 'vol4', 'vol5'].includes(magazine.data.volume) && Boolean(featureTitle);
+const showGuestHighlight = Boolean(guests?.length) && ['vol2', 'vol3', 'vol4', 'vol5'].includes(magazine.data.volume);
+const showIssueHighlights = showFeatureHighlight || showGuestHighlight;
+const showSummary = !showIssueHighlights || magazine.data.volume === 'vol2';
+const coverNoteHref = coverArtist && coverAfterword
+	? `/magazines/${magazine.data.volume}/cover`
+	: undefined;
+const summaryHtml = emdashHtml(magazine.data.summary);
+const volumeLabel = `vol.${magazine.data.volume.replace(/^vol/i, '')}`;
+
+/** 目次ラベル（例: スペシャルゲスト / 特集：…） */
+function tocEyebrows(
+	section?: string,
+	issueFeatureTitle?: string,
+	format?: string,
+	issueEmergencyFeatureTitle?: string,
+): string[] {
+	if (!section) return format ? [format] : [];
+	let labels: string[];
+	if (section === 'スペシャルゲスト' && issueFeatureTitle) {
+		labels = ['スペシャルゲスト', `特集：${issueFeatureTitle}`];
+	} else if (section === '特集' || section === '特集寄稿') {
+		labels = [issueFeatureTitle ? `特集：${issueFeatureTitle}` : '特集'];
+	} else if (section === '緊急特集') {
+		labels = [issueEmergencyFeatureTitle ? `緊急特集：${issueEmergencyFeatureTitle}` : '緊急特集'];
+	} else {
+		labels = [section];
+	}
+	return format ? [...labels, format] : labels;
+}
+---
+
+<BaseLayout title={`${magazine.data.title} | ニートマガジン`}>
+	<div class="study">
+		<header class="page-header">
+			<nav class="data-label issue-page__breadcrumb" aria-label="パンくずリスト">
+				<a href="/magazines">ARCHIVE</a>
+				<span class="issue-page__breadcrumb-sep" aria-hidden="true">&gt;</span>
+				<span aria-current="page">{volumeLabel}</span>
+			</nav>
+		</header>
+	</div>
+	<section class="shell pb-16 md:pb-24">
+		<div class:list={['issue-page', cover && 'issue-page--with-cover']}>
+			<div class="issue-page__main">
+				<h1 class:list={['issue-page__title font-black', cover ? 'text-4xl md:text-5xl' : 'text-4xl md:text-6xl']}>{magazine.data.title}</h1>
+
+				{showIssueHighlights ? (
+					<div class="issue-page__highlights">
+						{showFeatureHighlight ? (
+							<p class="issue-page__highlight">
+								<span class="issue-page__highlight-label">特集</span>
+								<span class="issue-page__highlight-text">{featureTitle}</span>
+							</p>
+						) : null}
+						{showGuestHighlight ? (
+							<p class="issue-page__highlight issue-page__highlight--guest">
+								<span class="issue-page__highlight-label">スペシャルゲスト</span>
+								<span class="issue-page__highlight-text">{guests!.join('／')}</span>
+							</p>
+						) : null}
+					</div>
+				) : null}
+				{showSummary && (
+					<p class="mt-6 max-w-xl text-lg text-[var(--muted)]" set:html={summaryHtml} />
+				)}
+
+				{archiveAt && !archiveAvailable && (
+					<p class="issue-page__archive-notice">
+						Web無料アーカイブ公開：<strong>{formatDateJa(archiveAt)}</strong>
+						<span class="issue-page__archive-notice-detail">記事・PDFは公開日まで閲覧できません。</span>
+					</p>
+				)}
+
+				<section class="issue-page__contents">
+					<p class="eyebrow">目次</p>
+					<div class="mt-4">
+						{articles.map((article) => (
+							<ArchiveCard
+								eyebrows={tocEyebrows(article.data.section, featureTitle, article.data.format, emergencyFeatureTitle)}
+								title={article.data.title}
+								href={`/magazines/${magazine.data.volume}/${article.id.split('/').at(-1)}`}
+								meta={article.data.author}
+								disabled={!archiveAvailable}
+							/>
+						))}
+					</div>
+				</section>
+
+				<dl class="issue-page__specs">
+					{magazine.data.pageCount && (
+						<div>
+							<dt>冊子</dt>
+							<dd>A5製本・{magazine.data.pageCount}ページ</dd>
+						</div>
+					)}
+					{magazine.data.price && (
+						<div>
+							<dt>定価</dt>
+							<dd>{magazine.data.price}</dd>
+						</div>
+					)}
+					<div>
+						<dt>発行</dt>
+						<dd>{formatDate(magazine.data.publishedAt)}</dd>
+					</div>
+				</dl>
+			</div>
+
+			<aside class="issue-page__aside">
+				{cover ? (
+					<figure class="issue-page__cover">
+						<img src={cover} alt={`${magazine.data.title} 表紙`} width="1200" height="1697" loading="eager" />
+						{coverArtist && (
+							<figcaption class="issue-page__cover-credit">
+								表紙イラスト：{coverNoteHref
+									? <a class="issue-page__cover-artist" href={coverNoteHref}>{coverArtist}</a>
+									: coverArtist}
+							</figcaption>
+						)}
+					</figure>
+				) : coverArtist ? (
+					<p class="issue-page__cover-credit">
+						表紙イラスト：{coverNoteHref
+							? <a class="issue-page__cover-artist" href={coverNoteHref}>{coverArtist}</a>
+							: coverArtist}
+					</p>
+				) : null}
+				{pdfPath ? (
+					archiveAvailable ? (
+						<a class="pdf-cta" href={`/magazines/${magazine.data.volume}/viewer`}>
+							PDFビューアで読む（全画面・見開き）
+						</a>
+					) : (
+						<p class="pdf-cta pdf-cta--disabled" aria-disabled="true">
+							PDFビューアで読む（{formatDateJa(archiveAt!)}公開）
+						</p>
+					)
+				) : (
+					<p class="issue-page__pdf-pending">PDFは公開準備中です。</p>
+				)}
+			</aside>
+		</div>
+
+		<a class="mt-12 inline-block" href="/magazines">← バックナンバー一覧へ戻る</a>
+	</section>
+</BaseLayout>

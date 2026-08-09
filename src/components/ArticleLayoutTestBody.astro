@@ -1,0 +1,40 @@
+---
+/**
+ * 記事レイアウト比較用のダミー本文。
+ * 本番コンテンツは使わず、タイトル幅と読み幅の見え方だけ確認する。
+ */
+import { SAMPLE_CURRENT } from '../lib/article-layout-test';
+
+interface Props {
+	/** タイトルサイズを本番寄り（大きめ）にするか */
+	largeTitle?: boolean;
+}
+
+const { largeTitle = true } = Astro.props;
+const article = SAMPLE_CURRENT;
+---
+
+<p class="eyebrow"><a href="/magazines/vol2">vol2</a> · LAYOUT TEST</p>
+<h1 class:list={['mt-4 font-black leading-tight', largeTitle ? 'text-4xl md:text-6xl' : 'text-3xl md:text-5xl']}>
+	{article.title}
+</h1>
+<p class="mt-6 text-[var(--muted)]">{article.author}</p>
+
+<div class="prose mt-14">
+	<p>
+		これは記事レイアウト比較用のダミー本文です。ヘッダーのロゴ〜テーマ切替スイッチと同じ幅に、
+		タイトルと本文が収まっているかを確認してください。
+	</p>
+	<p>
+		本番の記事ページでは、右サイドの記事一覧のためにコンテナが広がり、長いタイトルがヘッダー幅をはみ出すことがあります。
+		各テスト案ではそのはみ出しを解消しつつ、号内ナビをどう残すかを見比べます。
+	</p>
+	<p>
+		ダミーの段落を続けます。ニートマガジンは、無職・ニート・働きたくない人々の生活、思想、文化を記録するZINEです。
+		冊子版のアーカイブをWebでも同じ読書体験に近づけるため、余白と行間、タイポグラフィを整えています。
+	</p>
+	<p>
+		もう一段落。画面幅を変えたり、ライト／ダークを切り替えたりして、タイトル折り返しとサイドナビの圧迫感を確認してください。
+		「この号の他の記事へどう移動するか」も、案ごとの差が出るポイントです。
+	</p>
+</div>

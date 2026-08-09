@@ -1,0 +1,24 @@
+---
+import { getCollection } from 'astro:content';
+import FaqList from '../components/FaqList.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+
+const items = (await getCollection('qa')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout
+	title="Q&A | ニートマガジン"
+	description="ニートマガジンに関するよくある質問と回答です。"
+>
+	<PageHero label="Q&A" title="よくある質問" />
+	<section class="shell pb-16 md:pb-24">
+		<p class="max-w-xl text-[var(--muted)]">ニートマガジンについて、よくある質問をまとめました。</p>
+		<div class="mt-12">
+			<FaqList items={items} />
+		</div>
+		<p class="mt-12 max-w-xl text-sm text-[var(--muted)]">
+			解決しない場合は<a href="/contact">お問い合わせ</a>フォームからご連絡ください。
+		</p>
+	</section>
+</BaseLayout>

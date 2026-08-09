@@ -1,0 +1,177 @@
+---
+import ArticleLayoutTestBody from '../../../components/ArticleLayoutTestBody.astro';
+import ArticleLayoutTestNav from '../../../components/ArticleLayoutTestNav.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { SAMPLE_ARTICLES, SAMPLE_CURRENT } from '../../../lib/article-layout-test';
+---
+
+<BaseLayout title="記事レイアウト · 案C | ニートマガジン">
+	<section class="shell py-16 md:py-24">
+		<p class="eyebrow">TEST C</p>
+		<h1 class="mt-4 text-3xl font-black md:text-4xl">極小 TOC（番号のみ）</h1>
+		<p class="mt-4 max-w-xl text-sm text-[var(--muted)]">
+			全体はヘッダー幅のまま。右に番号だけの細い TOC を置き、hover / focus でタイトルを出す案。
+		</p>
+		<ArticleLayoutTestNav current="c" />
+
+		<div class="layout-test-c mt-14">
+			<article class="min-w-0">
+				<ArticleLayoutTestBody />
+				<a class="mt-12 inline-block" href="/magazines/vol2">← vol2 へ戻る</a>
+			</article>
+
+			<aside class="layout-test-c__toc" aria-label="この号の記事">
+				<p class="eyebrow">目次</p>
+				<ol class="layout-test-c__list">
+					{SAMPLE_ARTICLES.map((item) => {
+						const isCurrent = item.slug === SAMPLE_CURRENT.slug;
+						const num = String(item.order).padStart(2, '0');
+						return (
+							<li>
+								{isCurrent ? (
+									<span class="layout-test-c__item layout-test-c__item--current" aria-current="page" title={item.title}>
+										<span class="layout-test-c__num">{num}</span>
+										<span class="layout-test-c__tip">{item.title}</span>
+									</span>
+								) : (
+									<a class="layout-test-c__item" href={`/magazines/vol2/${item.slug}`} title={item.title}>
+										<span class="layout-test-c__num">{num}</span>
+										<span class="layout-test-c__tip">{item.title}</span>
+									</a>
+								)}
+							</li>
+						);
+					})}
+				</ol>
+			</aside>
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.layout-test-c {
+		display: grid;
+		gap: 2rem;
+	}
+
+	@media (min-width: 768px) {
+		.layout-test-c {
+			align-items: start;
+			grid-template-columns: minmax(0, 1fr) 3.25rem;
+			gap: 1.75rem;
+		}
+
+		.layout-test-c__toc {
+			border-left: 1px solid var(--line);
+			display: flex;
+			flex-direction: column;
+			max-height: calc(100dvh - 3rem);
+			min-height: 0;
+			overflow: hidden;
+			padding-left: 0.85rem;
+			padding-top: 7rem;
+			position: sticky;
+			top: 1.5rem;
+		}
+
+		.layout-test-c__list {
+			flex: 1 1 auto;
+			min-height: 0;
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			scrollbar-gutter: stable;
+		}
+	}
+
+	.layout-test-c__list {
+		list-style: none;
+		margin: 0.75rem 0 0;
+		padding: 0;
+		display: grid;
+		gap: 0.35rem;
+	}
+
+	.layout-test-c__item {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 1.85rem;
+		text-decoration: none;
+		color: var(--muted);
+		font-size: 0.78rem;
+		font-variant-numeric: tabular-nums;
+		letter-spacing: 0.04em;
+	}
+
+	.layout-test-c__item--current,
+	.layout-test-c__item[aria-current='page'] {
+		color: var(--ink);
+		font-weight: 700;
+	}
+
+	.layout-test-c__item:hover,
+	.layout-test-c__item:focus-visible {
+		color: var(--ink);
+		opacity: 1;
+	}
+
+	.layout-test-c__tip {
+		display: none;
+	}
+
+	@media (min-width: 768px) {
+		.layout-test-c__tip {
+			display: block;
+			position: absolute;
+			right: calc(100% + 0.75rem);
+			top: 50%;
+			transform: translateY(-50%);
+			white-space: nowrap;
+			max-width: 14rem;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			padding: 0.35rem 0.55rem;
+			border: 1px solid var(--line);
+			background: var(--page);
+			color: var(--ink);
+			font-size: 0.75rem;
+			font-weight: 500;
+			letter-spacing: 0;
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 0.12s ease;
+			z-index: 2;
+		}
+
+		.layout-test-c__item:hover .layout-test-c__tip,
+		.layout-test-c__item:focus-visible .layout-test-c__tip {
+			opacity: 1;
+		}
+	}
+
+	@media (max-width: 767px) {
+		.layout-test-c__toc {
+			border-top: 1px solid var(--line);
+			padding-top: 1rem;
+			order: -1;
+		}
+
+		.layout-test-c__list {
+			grid-auto-flow: column;
+			grid-auto-columns: max-content;
+			overflow-x: auto;
+			gap: 0.75rem;
+			padding-bottom: 0.25rem;
+		}
+
+		.layout-test-c__item {
+			justify-content: flex-start;
+			gap: 0.4rem;
+		}
+
+		.layout-test-c__tip {
+			display: none;
+		}
+	}
+</style>

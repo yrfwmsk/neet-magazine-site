@@ -1,0 +1,49 @@
+---
+interface Props {
+	current: 'a' | 'b' | 'c' | 'd' | 'bc';
+}
+const { current } = Astro.props;
+const tests = [
+	{ id: 'a', label: 'A · 上線', href: '/magazines/accent-tests/a' },
+	{ id: 'b', label: 'B · 色面', href: '/magazines/accent-tests/b' },
+	{ id: 'c', label: 'C · 号数字', href: '/magazines/accent-tests/c' },
+	{ id: 'd', label: 'D · 帯背景', href: '/magazines/accent-tests/d' },
+	{ id: 'bc', label: 'B+C · 融合', href: '/magazines/accent-tests/bc' },
+] as const;
+---
+
+<nav class="accent-test-nav" aria-label="アクセント案の切り替え">
+	<a href="/magazines/accent-tests">一覧</a>
+	{tests.map((test) => (
+		<a href={test.href} aria-current={test.id === current ? 'page' : undefined}>{test.label}</a>
+	))}
+	<a href="/magazines">本番へ</a>
+</nav>
+
+<style>
+	.accent-test-nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.65rem 1rem;
+		font-size: 0.8rem;
+		letter-spacing: 0.04em;
+		margin-top: 1.5rem;
+	}
+
+	.accent-test-nav a {
+		color: var(--muted);
+		text-decoration: none;
+	}
+
+	.accent-test-nav a[aria-current='page'] {
+		color: var(--ink);
+		font-weight: 700;
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+
+	.accent-test-nav a:hover {
+		color: var(--ink);
+		opacity: 1;
+	}
+</style>

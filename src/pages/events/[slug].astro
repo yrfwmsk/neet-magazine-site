@@ -1,0 +1,51 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatDate } from '../../lib/date';
+
+export async function getStaticPaths() {
+	const events = await getCollection('events');
+	return events.map((event) => ({ params: { slug: event.id }, props: { event } }));
+}
+const { event } = Astro.props;
+const { Content } = await render(event);
+const sold = new Set(event.data.soldVolumes);
+const volumeNumbers = Array.from({ length: event.data.latestVolume }, (_, i) => i + 1);
+const titleStartsWithOpenBracket = /^[『「]/.test(event.data.title);
+---
+
+<BaseLayout title={`${event.data.title} | ニートマガジン`}>
+	<section class="shell py-16 md:py-24">
+		<p class="eyebrow">{event.data.status === 'upcoming' ? 'UPCOMING EVENT' : 'EVENT ARCHIVE'}</p>
+		<h1 class:list={['mt-4', 'text-4xl', 'font-black', 'md:text-6xl', titleStartsWithOpenBracket && 'event-title--hang']}>{event.data.title}</h1>
+		<dl class="mt-10 grid max-w-2xl gap-4 border-y border-[var(--line)] py-6 text-sm sm:grid-cols-[8rem_1fr]">
+			<dt class="font-bold">開催日</dt><dd>{formatDate(event.data.date)}</dd>
+			<dt class="font-bold">場所</dt><dd>{event.data.place}</dd>
+			{event.data.booth && <><dt class="font-bold">ブース</dt><dd>{event.data.booth}</dd></>}
+			<dt class="font-bold">販売号</dt>
+			<dd>
+				<span class="event-volumes" aria-label={`Vol.${volumeNumbers.map((n) => (sold.has(n) ? n : `${n}（未販売）`)).join('・')}`}>
+					<span class="event-volumes__label">Vol.</span>
+					{
+						volumeNumbers.map((n) => (
+							<span
+								class:list={['event-volumes__item', sold.has(n) ? 'is-sold' : 'is-unsold']}
+								aria-hidden="true"
+							>
+								{n}
+							</span>
+						))
+					}
+				</span>
+			</dd>
+		</dl>
+		<div class="prose mt-12"><Content /></div>
+		<a class="mt-12 inline-block" href="/events">← イベント一覧へ戻る</a>
+	</section>
+</BaseLayout>
+
+<style>
+	.event-title--hang {
+		margin-left: -0.45em;
+	}
+</style>

@@ -1,0 +1,98 @@
+---
+import AccentTestNav from '../../../components/AccentTestNav.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getAccentTestMagazines } from '../../../lib/accent-test';
+import { formatDate } from '../../../lib/date';
+
+const magazines = await getAccentTestMagazines();
+---
+
+<BaseLayout title="アクセント案 B · 色面 | ニートマガジン">
+	<section class="shell py-16 md:py-24">
+		<p class="eyebrow">TEST B</p>
+		<h1 class="mt-4 text-3xl font-black md:text-4xl">色面アクセント</h1>
+		<p class="mt-4 max-w-xl text-sm text-[var(--muted)]">
+			表紙サムネの代わりに正方形の色面を置く案。カタログ／アーカイブの並び向き。
+		</p>
+		<AccentTestNav current="b" />
+
+		<div class="test-b mt-12">
+			{magazines.map((magazine) => (
+				<article class="test-b__item" style={`--accent: ${magazine.accentColor}`}>
+					<a class="test-b__plate" href={magazine.href} aria-hidden="true" tabindex="-1"></a>
+					<div class="test-b__body">
+						<h2 class="test-b__title">
+							<a href={magazine.href}>{magazine.title}</a>
+						</h2>
+						<p class="test-b__desc">{magazine.summary}</p>
+						<p class="test-b__meta">{formatDate(magazine.publishedAt)}</p>
+					</div>
+				</article>
+			))}
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.test-b {
+		display: grid;
+		gap: 1.75rem 0;
+	}
+
+	@media (min-width: 768px) {
+		.test-b {
+			grid-template-columns: 1fr 1fr;
+			column-gap: 3rem;
+			row-gap: 2.25rem;
+		}
+	}
+
+	.test-b__item {
+		align-items: flex-start;
+		border-top: 1px solid var(--line);
+		display: flex;
+		gap: 1.1rem;
+		padding-top: 1.35rem;
+	}
+
+	.test-b__plate {
+		aspect-ratio: 1;
+		background: var(--accent);
+		display: block;
+		flex-shrink: 0;
+		text-decoration: none;
+		width: 4.25rem;
+	}
+
+	.test-b__body {
+		min-width: 0;
+		padding-top: 0.1rem;
+	}
+
+	.test-b__title {
+		font-size: 1.1rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1.45;
+		margin: 0;
+	}
+
+	.test-b__desc {
+		color: var(--muted);
+		font-size: 0.88rem;
+		line-height: 1.65;
+		margin: 0.45rem 0 0;
+	}
+
+	.test-b__meta {
+		color: var(--muted);
+		font-size: 0.78rem;
+		margin: 0.75rem 0 0;
+	}
+
+	@media (min-width: 768px) {
+		.test-b__plate {
+			width: 5rem;
+		}
+	}
+</style>

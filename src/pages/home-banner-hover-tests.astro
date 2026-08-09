@@ -1,0 +1,278 @@
+---
+import { getCollection } from 'astro:content';
+import ArchiveCard from '../components/ArchiveCard.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { VOLUME_ACCENTS } from '../lib/accent-test';
+import { formatDate } from '../lib/date';
+
+const magazines = await getCollection('magazines');
+const latestMagazine = magazines.sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf())[0];
+const meta = latestMagazine?.data.archiveAt
+	? `発売日 ${formatDate(latestMagazine.data.publishedAt)}　デジタルアーカイブ公開 ${formatDate(latestMagazine.data.archiveAt)}`
+	: latestMagazine
+		? formatDate(latestMagazine.data.publishedAt)
+		: undefined;
+const coverBg = '/images/covers/vol5-home.png';
+const href = latestMagazine ? `/magazines/${latestMagazine.data.volume}` : '#';
+const accent = latestMagazine
+	? (VOLUME_ACCENTS[latestMagazine.data.volume] ?? latestMagazine.data.accentColor)
+	: '#751F32';
+
+const variants = [
+	{
+		id: 'a',
+		title: 'A · 現行（拡大＋明るく）',
+		blurb: '背景をわずかに拡大し、明るさを上げる。いまのトップと同じ系統。',
+	},
+	{
+		id: 'b',
+		title: 'B · 幕を薄く',
+		blurb: '画像はそのまま。暗いオーバーレイだけ薄くして、絵が見える方向。',
+	},
+	{
+		id: 'c',
+		title: 'C · 白いヴェール',
+		blurb: '薄い白のレイヤーを被せる。雑誌バナーっぽいフラットな反応。',
+	},
+	{
+		id: 'd',
+		title: 'D · 下線',
+		blurb: '画像は動かさない。下辺に細い白線が出るだけ。',
+	},
+	{
+		id: 'e',
+		title: 'E · 正方形だけ',
+		blurb: '号の色面だけ少し大きく／縁を立てる。背景は静止。',
+	},
+	{
+		id: 'f',
+		title: 'F · 少し沈めて文字を立てる',
+		blurb: '背景をわずかに暗くし、文字の影を強めて可読側に振る。',
+	},
+	{
+		id: 'g',
+		title: 'G · 位置だけずらす',
+		blurb: '拡大なし。背景位置をわずかにずらすパン。',
+	},
+	{
+		id: 'h',
+		title: 'H · 枠の光',
+		blurb: '内側に細い白いインセットリング。写真はほぼ動かない。',
+	},
+] as const;
+---
+
+<BaseLayout title="最新号バナー ホバー案 | ニートマガジン">
+	<section class="shell py-12 md:py-16">
+		<p class="eyebrow">HOME / BANNER HOVER</p>
+		<h1 class="mt-3 text-3xl font-black md:text-4xl">最新号バナーのホバー案</h1>
+		<p class="mt-4 max-w-2xl text-[var(--muted)]">
+			同じカードに、ホバー反応だけ変えた案です。気に入った ID（A〜H）を教えてください。
+		</p>
+		<p class="mt-2">
+			<a href="/">← トップへ戻る</a>
+		</p>
+
+		<div class="hover-tests mt-12">
+			{variants.map((variant) => (
+				<section class="hover-tests__item" id={variant.id}>
+					<header class="hover-tests__head">
+						<h2 class="hover-tests__title m-0">{variant.title}</h2>
+						<p class="hover-tests__blurb m-0">{variant.blurb}</p>
+					</header>
+					{latestMagazine && (
+						<div
+							class:list={[
+								'home-feed__latest-frame',
+								'home-feed__latest-frame--cover',
+								`hover-variant hover-variant--${variant.id}`,
+							]}
+							style={`--cover-image: url('${coverBg}')`}
+						>
+							<ArchiveCard
+								title={latestMagazine.data.title}
+								description={latestMagazine.data.summary}
+								href={href}
+								meta={meta}
+								accentColor={accent}
+								volume={latestMagazine.data.volume}
+							/>
+							<a class="home-feed__latest-hit" href={href} aria-label={`${latestMagazine.data.title}を見る`}></a>
+						</div>
+					)}
+				</section>
+			))}
+		</div>
+	</section>
+</BaseLayout>
+
+<style is:global>
+	.hover-tests {
+		display: grid;
+		gap: 2.5rem;
+	}
+	.hover-tests__head {
+		margin-bottom: 0.65rem;
+	}
+	.hover-tests__title {
+		font-size: 1.05rem;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+	}
+	.hover-tests__blurb {
+		color: var(--muted);
+		font-size: 0.88rem;
+		line-height: 1.55;
+		margin-top: 0.25rem;
+	}
+
+	/* テストページでは各案のホバーだけ効かせるため、現行の共通ホバーを打ち消す */
+	.hover-variant.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover)::before,
+	.hover-variant.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible)::before {
+		filter: none;
+		transform: none;
+	}
+	.hover-variant.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover)::after,
+	.hover-variant.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible)::after {
+		opacity: 1;
+	}
+
+	.hover-variant .archive-card {
+		align-items: center;
+		border-bottom-color: transparent;
+		border-top-color: transparent;
+		gap: 1.35rem;
+		padding-block: 1.75rem;
+		padding-left: 1rem;
+	}
+	.hover-variant .archive-card__mark {
+		width: 3.25rem;
+	}
+	.hover-variant .archive-card__title,
+	.hover-variant .archive-card__title a,
+	.hover-variant .archive-card__desc,
+	.hover-variant .archive-card__meta {
+		color: #fff;
+		text-shadow:
+			0 0 12px rgba(0, 0, 0, 0.55),
+			0 1px 2px rgba(0, 0, 0, 0.75);
+	}
+
+	/* A · 現行 */
+	.hover-variant--a.home-feed__latest-frame--cover::before {
+		transition: transform 0.4s ease, filter 0.4s ease;
+	}
+	.hover-variant--a.home-feed__latest-frame--cover::after {
+		transition: opacity 0.4s ease;
+	}
+	.hover-variant--a.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover)::before,
+	.hover-variant--a.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible)::before {
+		filter: brightness(1.08);
+		transform: scale(1.03);
+	}
+	.hover-variant--a.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover)::after,
+	.hover-variant--a.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible)::after {
+		opacity: 0.84;
+	}
+
+	/* B · 幕を薄く */
+	.hover-variant--b.home-feed__latest-frame--cover::after {
+		transition: opacity 0.35s ease;
+	}
+	.hover-variant--b.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover)::after,
+	.hover-variant--b.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible)::after {
+		opacity: 0.72;
+	}
+
+	/* C · 白いヴェール */
+	.hover-variant--c.home-feed__latest-frame--cover {
+		--veil: 0;
+	}
+	.hover-variant--c.home-feed__latest-frame--cover::after {
+		box-shadow: inset 0 0 0 999px rgba(255, 255, 255, var(--veil));
+		transition: box-shadow 0.35s ease;
+	}
+	.hover-variant--c.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover),
+	.hover-variant--c.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible) {
+		--veil: 0.12;
+	}
+
+	/* D · 下線 */
+	.hover-variant--d.home-feed__latest-frame--cover::after {
+		border-bottom: 2px solid transparent;
+		transition: border-color 0.3s ease;
+	}
+	.hover-variant--d.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover)::after,
+	.hover-variant--d.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible)::after {
+		border-bottom-color: rgba(255, 255, 255, 0.92);
+	}
+
+	/* E · 正方形だけ */
+	.hover-variant--e .archive-card__mark {
+		outline: 1px solid transparent;
+		outline-offset: 2px;
+		transition:
+			transform 0.3s ease,
+			outline-color 0.3s ease;
+	}
+	.hover-variant--e.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover) .archive-card__mark,
+	.hover-variant--e.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible) .archive-card__mark {
+		outline-color: rgba(255, 255, 255, 0.85);
+		transform: scale(1.06);
+	}
+
+	/* F · 沈めて文字を立てる */
+	.hover-variant--f.home-feed__latest-frame--cover::before {
+		transition: filter 0.35s ease;
+	}
+	.hover-variant--f.home-feed__latest-frame--cover::after {
+		box-shadow: inset 0 0 0 999px rgba(0, 0, 0, 0);
+		transition: box-shadow 0.35s ease;
+	}
+	.hover-variant--f .archive-card__title,
+	.hover-variant--f .archive-card__title a,
+	.hover-variant--f .archive-card__desc,
+	.hover-variant--f .archive-card__meta {
+		transition: text-shadow 0.35s ease;
+	}
+	.hover-variant--f.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover)::before,
+	.hover-variant--f.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible)::before {
+		filter: brightness(0.9);
+	}
+	.hover-variant--f.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover)::after,
+	.hover-variant--f.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible)::after {
+		box-shadow: inset 0 0 0 999px rgba(0, 0, 0, 0.12);
+	}
+	.hover-variant--f.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover) .archive-card__title,
+	.hover-variant--f.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover) .archive-card__title a,
+	.hover-variant--f.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover) .archive-card__desc,
+	.hover-variant--f.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover) .archive-card__meta,
+	.hover-variant--f.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible) .archive-card__title,
+	.hover-variant--f.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible) .archive-card__title a,
+	.hover-variant--f.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible) .archive-card__desc,
+	.hover-variant--f.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible) .archive-card__meta {
+		text-shadow:
+			0 0 16px rgba(0, 0, 0, 0.75),
+			0 1px 3px rgba(0, 0, 0, 0.9);
+	}
+
+	/* G · 位置だけずらす */
+	.hover-variant--g.home-feed__latest-frame--cover::before {
+		background-position: 50% 50%;
+		transition: background-position 0.55s ease;
+	}
+	.hover-variant--g.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover)::before,
+	.hover-variant--g.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible)::before {
+		background-position: 56% 46%;
+	}
+
+	/* H · 枠の光 */
+	.hover-variant--h.home-feed__latest-frame--cover::after {
+		box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0);
+		transition: box-shadow 0.3s ease;
+	}
+	.hover-variant--h.home-feed__latest-frame--cover:has(.home-feed__latest-hit:hover)::after,
+	.hover-variant--h.home-feed__latest-frame--cover:has(.home-feed__latest-hit:focus-visible)::after {
+		box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.78);
+	}
+</style>

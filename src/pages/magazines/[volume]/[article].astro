@@ -1,0 +1,192 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import AuthorAfterword from '../../../components/AuthorAfterword.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { isArchiveAvailable } from '../../../lib/archive';
+import { formatDateJa } from '../../../lib/date';
+import { emdashHtml } from '../../../lib/emdash';
+
+export async function getStaticPaths() {
+	const articles = await getCollection('articles');
+	return articles.map((article) => ({
+		params: { volume: article.data.volume, article: article.id.split('/').at(-1) },
+		props: { article },
+	}));
+}
+const { article } = Astro.props;
+const magazine = (await getCollection('magazines')).find((m) => m.data.volume === article.data.volume);
+const archiveAvailable = isArchiveAvailable(magazine?.data.archiveAt);
+const { Content } = archiveAvailable ? await render(article) : { Content: null };
+const issueArticles = (await getCollection('articles', ({ data }) => data.volume === article.data.volume))
+	.sort((a, b) => a.data.order - b.data.order);
+const afterwordEntries = article.data.afterwords?.length
+	? article.data.afterwords
+	: article.data.afterword
+		? [{ author: article.data.author, authorId: article.data.authorId, text: article.data.afterword }]
+		: [];
+const afterwordAuthors = await Promise.all(
+	afterwordEntries.map(async (entry) => ({
+		...entry,
+		authorEntry: entry.authorId ? await getEntry('authors', entry.authorId) : undefined,
+	})),
+);
+const showToc = issueArticles.length > 1;
+const titleHtml = emdashHtml(article.data.title);
+const volumeLabel = `vol.${article.data.volume.replace(/^vol/i, '')}`;
+const articleSlug = article.id.split('/').at(-1) ?? '';
+---
+
+<BaseLayout title={`${article.data.title} | ニートマガジン`}>
+	<div class="study">
+		<header class="page-header">
+			<nav class="data-label issue-page__breadcrumb" aria-label="パンくずリスト">
+				<a href="/magazines">ARCHIVE</a>
+				<span class="issue-page__breadcrumb-sep" aria-hidden="true">&gt;</span>
+				<a href={`/magazines/${article.data.volume}`}>{volumeLabel}</a>
+			</nav>
+		</header>
+	</div>
+	<section class="shell pb-16 md:pb-24">
+		{!archiveAvailable ? (
+			<div class="archive-locked">
+				<h1 class="archive-locked__title">この記事はまだ公開されていません</h1>
+				<p class="archive-locked__text">
+					{magazine?.data.archiveAt
+						? <>Web無料アーカイブ公開日（{formatDateJa(magazine.data.archiveAt)}）以降に閲覧できます。</>
+						: <>Web無料アーカイブ公開後に閲覧できます。</>}
+				</p>
+				<a class="mt-12 inline-block" href={`/magazines/${article.data.volume}`}>← {volumeLabel} へ戻る</a>
+			</div>
+		) : (
+		<div class:list={['article-layout', showToc && 'article-layout--with-toc']}>
+			<article class="min-w-0">
+				<h1 class="text-4xl font-black leading-tight md:text-6xl" set:html={titleHtml} />
+				<p class="mt-6 text-[var(--muted)]">{article.data.author}</p>
+				<div
+					id="article-body"
+					class:list={[
+						'prose',
+						article.data.format === '漫画' ? ['prose--manga', 'mt-2'] : 'mt-14',
+						articleSlug === 'z-generation' && 'prose--z-generation',
+					]}
+				><Content /></div>
+				{afterwordAuthors.map((entry) => (
+					<AuthorAfterword
+						penName={entry.author}
+						afterword={entry.text}
+						avatar={entry.authorEntry?.data.avatar}
+						links={entry.authorEntry?.data.links}
+					/>
+				))}
+				<a class="mt-12 inline-block" href={`/magazines/${article.data.volume}`}>← {volumeLabel} へ戻る</a>
+			</article>
+			{showToc && (
+				<aside class="article-toc" aria-label="この号の記事">
+					<p class="eyebrow">目次</p>
+					<div class="article-toc__scroll" data-toc-scroll>
+						<span class="article-toc__indicator article-toc__indicator--up" aria-hidden="true"></span>
+						<div class="article-toc__viewport">
+							<ol class="article-toc__list">
+						{issueArticles.map((item) => {
+							const slug = item.id.split('/').at(-1);
+							const isCurrent = item.id === article.id;
+							const num = String(item.data.order).padStart(2, '0');
+							return (
+								<li>
+									{isCurrent ? (
+										<span class="article-toc__item article-toc__item--current" aria-current="page" title={item.data.title}>
+											<span class="article-toc__num">{num}</span>
+											<span class="article-toc__tip">{item.data.title}</span>
+										</span>
+									) : (
+										<a class="article-toc__item" href={`/magazines/${article.data.volume}/${slug}`} title={item.data.title}>
+											<span class="article-toc__num">{num}</span>
+											<span class="article-toc__tip">{item.data.title}</span>
+										</a>
+									)}
+								</li>
+							);
+						})}
+							</ol>
+						</div>
+						<span class="article-toc__indicator article-toc__indicator--down" aria-hidden="true"></span>
+					</div>
+				</aside>
+			)}
+		</div>
+		)}
+	</section>
+	{archiveAvailable && showToc && (
+	<script>
+		const toc = document.querySelector('.article-toc');
+		const scrollWrap = document.querySelector('[data-toc-scroll]');
+		const viewport = document.querySelector('.article-toc__viewport');
+		const TOC_WHEEL_SPEED = 0.35;
+		const getWheelDelta = (event) => {
+			let delta = event.deltaY;
+			if (event.deltaMode === 1) delta *= 16;
+			else if (event.deltaMode === 2 && viewport) delta *= viewport.clientHeight;
+			return delta * TOC_WHEEL_SPEED;
+		};
+		const updateTocScroll = () => {
+			if (!viewport || !scrollWrap) return;
+			const edge = 4;
+			const { scrollTop, scrollHeight, clientHeight } = viewport;
+			const canScroll = scrollHeight > clientHeight + 1;
+			scrollWrap.toggleAttribute('data-can-scroll', canScroll);
+			scrollWrap.toggleAttribute('data-can-scroll-up', canScroll && scrollTop > edge);
+			scrollWrap.toggleAttribute('data-can-scroll-down', canScroll && scrollTop + clientHeight < scrollHeight - edge);
+		};
+		const scrollTocBy = (delta) => {
+			if (!viewport || viewport.scrollHeight <= viewport.clientHeight) return false;
+			const { scrollTop, scrollHeight, clientHeight } = viewport;
+			const atTop = scrollTop <= 0;
+			const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+			const scrollingUp = delta < 0;
+			const scrollingDown = delta > 0;
+			if ((atTop && scrollingUp) || (atBottom && scrollingDown)) return false;
+			viewport.scrollTop += delta;
+			updateTocScroll();
+			return true;
+		};
+		if (viewport) {
+			viewport.addEventListener('scroll', updateTocScroll, { passive: true });
+			window.addEventListener('resize', updateTocScroll, { passive: true });
+			new ResizeObserver(updateTocScroll).observe(viewport);
+			toc?.addEventListener('wheel', (event) => {
+				const delta = getWheelDelta(event);
+				if (!delta) return;
+				if (scrollTocBy(delta)) {
+					event.preventDefault();
+					event.stopPropagation();
+				}
+			}, { passive: false, capture: true });
+			const currentItem = document.querySelector('.article-toc__item--current');
+			currentItem?.scrollIntoView({ block: 'nearest' });
+			updateTocScroll();
+			requestAnimationFrame(updateTocScroll);
+		}
+	</script>
+	)}
+	{archiveAvailable && (
+	<script>
+		const body = document.querySelector('#article-body');
+		body?.querySelectorAll<HTMLButtonElement>('[data-footnote]').forEach((button) => {
+			button.addEventListener('click', () => {
+				const popup = body.querySelector<HTMLElement>(`#${button.dataset.footnote}`);
+				const willOpen = popup?.dataset.open !== 'true';
+				body.querySelectorAll<HTMLElement>('[data-footnote-popup]').forEach((el) => {
+					el.dataset.open = 'false';
+				});
+				body.querySelectorAll<HTMLButtonElement>('[data-footnote]').forEach((btn) => {
+					btn.setAttribute('aria-expanded', 'false');
+				});
+				if (popup && willOpen) {
+					popup.dataset.open = 'true';
+					button.setAttribute('aria-expanded', 'true');
+				}
+			});
+		});
+	</script>
+	)}
+</BaseLayout>

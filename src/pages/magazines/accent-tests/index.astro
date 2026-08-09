@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { VOLUME_ACCENTS } from '../../../lib/accent-test';
+
+const tests = [
+	{
+		id: 'a',
+		href: '/magazines/accent-tests/a',
+		title: 'A · 上線',
+		blurb: '項目の上辺を号カラーの太線にする。白黒本文はそのまま、色は区切りだけに使う。',
+	},
+	{
+		id: 'b',
+		href: '/magazines/accent-tests/b',
+		title: 'B · 色面',
+		blurb: '表紙色の代わりに正方形の色面を置く。アーカイブのカタログ感を強める。',
+	},
+	{
+		id: 'c',
+		href: '/magazines/accent-tests/c',
+		title: 'C · 号数字',
+		blurb: '大きな号数字をアクセント色で置く。タイポグラフィで号を識別する。',
+	},
+	{
+		id: 'd',
+		href: '/magazines/accent-tests/d',
+		title: 'D · 帯背景',
+		blurb: '左に幅広の色帯、本文は通常。背表紙をもう少し主張させた案。',
+	},
+	{
+		id: 'bc',
+		href: '/magazines/accent-tests/bc',
+		title: 'B+C · 融合',
+		blurb: '小さめの正方形色面に、Noto Serif JP の号数字を重ねた案。本番反映済み。',
+	},
+];
+---
+
+<BaseLayout title="アクセント案テスト | ニートマガジン">
+	<section class="shell py-16 md:py-24">
+		<p class="eyebrow">DESIGN TESTS</p>
+		<h1 class="mt-4 text-4xl font-black md:text-5xl">バックナンバー · アクセント案</h1>
+		<p class="mt-6 max-w-2xl text-[var(--muted)]">
+			号イメージカラーの見せ方を4案並べています。本番のバックナンバーにはまだ反映していません。
+		</p>
+
+		<ul class="mt-10 list-none space-y-0 p-0">
+			{tests.map((test) => (
+				<li class="border-t border-[var(--line)] py-6">
+					<a class="text-xl font-bold no-underline" href={test.href}>{test.title}</a>
+					<p class="mt-2 mb-0 max-w-xl text-sm text-[var(--muted)]">{test.blurb}</p>
+				</li>
+			))}
+		</ul>
+
+		<div class="mt-12 border border-[var(--line)] p-5">
+			<p class="eyebrow m-0">COLOR KEY</p>
+			<ul class="mt-4 mb-0 flex list-none flex-wrap gap-4 p-0 text-sm">
+				{Object.entries(VOLUME_ACCENTS).map(([volume, color]) => (
+					<li class="flex items-center gap-2">
+						<span class="inline-block h-3 w-3" style={`background:${color}`} aria-hidden="true"></span>
+						<span>{volume.toUpperCase()} · {color}</span>
+					</li>
+				))}
+			</ul>
+		</div>
+
+		<p class="mt-8 text-sm text-[var(--muted)]">
+			<a href="/magazines">← 本番のバックナンバーへ</a>
+		</p>
+	</section>
+</BaseLayout>

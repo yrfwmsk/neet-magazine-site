@@ -1,0 +1,85 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
+
+interface Props {
+	items: CollectionEntry<'qa'>[];
+}
+
+const { items } = Astro.props;
+const rendered = await Promise.all(
+	items.map(async (item) => ({
+		item,
+		...(await render(item)),
+	})),
+);
+---
+
+<div class="faq-list">
+	{
+		rendered.map(({ item, Content }) => (
+			<details class="faq-item">
+				<summary class="faq-item__question">{item.data.question}</summary>
+				<div class="faq-item__answer prose">
+					<Content />
+				</div>
+			</details>
+		))
+	}
+</div>
+
+<style>
+	.faq-list {
+		display: grid;
+		gap: 0;
+		max-width: 46rem;
+		border-top: 1px solid var(--line);
+	}
+
+	.faq-item {
+		border-bottom: 1px solid var(--line);
+	}
+
+	.faq-item__question {
+		cursor: pointer;
+		display: flex;
+		align-items: flex-start;
+		gap: 0.75rem;
+		font-size: 1.05rem;
+		font-weight: 700;
+		line-height: 1.6;
+		list-style: none;
+		padding: 1.25rem 0;
+		user-select: none;
+	}
+
+	.faq-item__question::-webkit-details-marker {
+		display: none;
+	}
+
+	.faq-item__question::before {
+		content: '+';
+		flex-shrink: 0;
+		width: 1.25rem;
+		color: var(--muted);
+		font-weight: 400;
+		text-align: center;
+	}
+
+	.faq-item[open] .faq-item__question::before {
+		content: '−';
+	}
+
+	.faq-item__answer {
+		padding: 0 0 1.5rem 2rem;
+		font-size: 1rem;
+	}
+
+	.faq-item__answer :global(p:first-child) {
+		margin-top: 0;
+	}
+
+	.faq-item__answer :global(p:last-child) {
+		margin-bottom: 0;
+	}
+</style>

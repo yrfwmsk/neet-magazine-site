@@ -1,0 +1,157 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatYearMonthJa } from '../lib/date';
+
+interface Props {
+	items: CollectionEntry<'bookstores'>[];
+	archived?: boolean;
+}
+
+const { items, archived = false } = Astro.props;
+
+function formatLocation(prefecture?: string, address?: string) {
+	return [prefecture, address].filter(Boolean).join('　');
+}
+
+function formatPeriod(start?: Date, end?: Date) {
+	if (!start && !end) return null;
+	if (start && end) return `${formatYearMonthJa(start)}〜${formatYearMonthJa(end)}`;
+	if (start) return `${formatYearMonthJa(start)}〜`;
+	if (end) return `〜${formatYearMonthJa(end)}`;
+	return null;
+}
+---
+
+<ul class:list={['bookstore-list', archived && 'bookstore-list--archived']}>
+	{
+		items.map((item) => {
+			const location = formatLocation(item.data.prefecture, item.data.address);
+			const period = formatPeriod(item.data.startedAt, item.data.endedAt);
+
+			return (
+				<li class="bookstore-item">
+					<div class="bookstore-item__head">
+						<h3 class="bookstore-item__name">
+							{item.data.url ? (
+								<a href={item.data.url} target="_blank" rel="noopener noreferrer">
+									{item.data.name}
+								</a>
+							) : (
+								item.data.name
+							)}
+						</h3>
+						{period && <p class="bookstore-item__period">{period}</p>}
+					</div>
+					<div class="bookstore-item__sections">
+						<p class="bookstore-item__text bookstore-item__intro">{item.data.introduction}</p>
+						<div class="bookstore-item__section">
+							<p class="bookstore-item__label">
+								<svg class="bookstore-item__icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+									<path
+										d="M12 21s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10Z"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linejoin="round"
+									/>
+									<circle cx="12" cy="11" r="2.25" fill="currentColor" />
+								</svg>
+								アクセス方法
+							</p>
+							{location && <p class="bookstore-item__address">{location}</p>}
+							<p class="bookstore-item__text">{item.data.access}</p>
+						</div>
+					</div>
+				</li>
+			);
+		})
+	}
+</ul>
+
+<style>
+	.bookstore-list {
+		border-top: 1px solid var(--line);
+		list-style: none;
+		margin: 0;
+		max-width: 46rem;
+		padding: 0;
+	}
+
+	.bookstore-item {
+		border-bottom: 1px solid var(--line);
+		padding: 1.35rem 0;
+	}
+
+	.bookstore-item__head {
+		align-items: baseline;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1rem;
+		justify-content: space-between;
+	}
+
+	.bookstore-item__name {
+		font-size: 1.1rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1.45;
+		margin: 0;
+	}
+
+	.bookstore-item__name a {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 0.18em;
+	}
+
+	.bookstore-item__period {
+		color: var(--muted);
+		font-size: 0.85rem;
+		letter-spacing: 0.02em;
+		margin: 0;
+		white-space: nowrap;
+	}
+
+	.bookstore-item__sections {
+		display: grid;
+		gap: 0.85rem;
+		margin-top: 0.85rem;
+	}
+
+	.bookstore-item__intro {
+		margin: 0;
+	}
+
+	.bookstore-item__label {
+		align-items: center;
+		color: var(--ink);
+		display: flex;
+		font-size: 0.8rem;
+		font-weight: 700;
+		gap: 0.35rem;
+		letter-spacing: 0.04em;
+		margin: 0 0 0.35rem;
+	}
+
+	.bookstore-item__icon {
+		flex-shrink: 0;
+	}
+
+	.bookstore-item__address {
+		color: var(--ink);
+		font-size: 0.9rem;
+		line-height: 1.7;
+		margin: 0 0 0.25rem;
+	}
+
+	.bookstore-item__text {
+		color: var(--ink);
+		font-size: 0.9rem;
+		line-height: 1.7;
+		margin: 0;
+	}
+
+	.bookstore-list--archived .bookstore-item__name {
+		font-weight: 600;
+	}
+</style>

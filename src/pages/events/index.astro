@@ -1,0 +1,256 @@
+---
+import { getCollection } from 'astro:content';
+import ArchiveCard from '../../components/ArchiveCard.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import {
+	formatTodayLabel,
+	getEventDateKey,
+	getTokyoDateKey,
+	partitionByTodayDateKey,
+} from '../../lib/date';
+
+const events = (await getCollection('events')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const MARK_COLOR = '#1F1C1D';
+const todayKey = getTokyoDateKey();
+const todayLabel = formatTodayLabel();
+
+const items = events.map((event) => ({
+	event,
+	dateKey: getEventDateKey(event.data.date),
+	year: getEventDateKey(event.data.date).slice(0, 4),
+}));
+
+const { upcoming, past } = partitionByTodayDateKey(items, todayKey);
+---
+
+<BaseLayout title="イベント | ニートマガジン">
+	<PageHero label="EVENTS" title="イベント情報" />
+	<section class="shell pb-16 md:pb-24">
+		<p class="max-w-xl text-[var(--muted)]">出店予定と活動記録です。</p>
+		{
+			items.length > 0 && (
+				<div class="archive-list mt-14" data-event-archive>
+					{upcoming.map((item, i) => {
+						const prevYear = i > 0 ? upcoming[i - 1].year : null;
+						const showYear = prevYear === null || prevYear !== item.year;
+						return (
+							<>
+								{showYear && (
+									<p class="event-year">
+										<span class="event-year__text">{item.year}年</span>
+									</p>
+								)}
+								<div class="event-item" data-date={item.dateKey} data-year={item.year}>
+									<ArchiveCard
+										layout="strip"
+										title={item.event.data.title}
+										href={`/events/${item.event.id}`}
+										accentColor={MARK_COLOR}
+										markDate={item.event.data.date}
+									/>
+								</div>
+							</>
+						);
+					})}
+
+					<p
+						class="event-today display-type"
+						data-event-today
+						hidden={past.length === 0}
+					>
+						本日　{todayLabel}
+					</p>
+
+					{past.map((item, i) => {
+						const prevYear = i > 0 ? past[i - 1].year : null;
+						const showYear = prevYear !== null && prevYear !== item.year;
+						return (
+							<>
+								{showYear && (
+									<p class="event-year">
+										<span class="event-year__text">{item.year}年</span>
+									</p>
+								)}
+								<div class="event-item" data-date={item.dateKey} data-year={item.year}>
+									<ArchiveCard
+										layout="strip"
+										title={item.event.data.title}
+										href={`/events/${item.event.id}`}
+										accentColor={MARK_COLOR}
+										markDate={item.event.data.date}
+									/>
+								</div>
+							</>
+						);
+					})}
+				</div>
+			)
+		}
+	</section>
+</BaseLayout>
+
+<style is:global>
+	[data-event-archive] > .event-year {
+		align-items: center;
+		box-sizing: border-box;
+		color: var(--ink);
+		display: flex;
+		font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+		font-weight: 900;
+		height: auto;
+		justify-content: center;
+		letter-spacing: -0.05em;
+		line-height: 1;
+		margin: 0.55rem 0;
+		min-height: 0;
+		overflow: visible;
+		padding: 0;
+		width: 2.75rem;
+	}
+
+	[data-event-archive] > .event-year:first-child {
+		margin-top: 0;
+		margin-bottom: 0.55rem;
+	}
+
+	[data-event-archive] .event-year__text {
+		display: block;
+		font-size: 0.95rem;
+		font-variant-numeric: tabular-nums;
+		line-height: 1;
+		text-align: center;
+		transform: scaleX(0.82);
+		transform-origin: center;
+		white-space: nowrap;
+	}
+
+	[data-event-archive] .event-today {
+		font-size: clamp(1.35rem, 3.5vw, 2rem);
+		letter-spacing: -0.03em;
+		line-height: 1.35;
+		margin: 0;
+		padding-block: 1.5rem;
+		text-align: center;
+		transform-origin: center;
+	}
+
+	@media (min-width: 768px) {
+		[data-event-archive] > .event-year {
+			margin: 0.65rem 0;
+			width: 3rem;
+		}
+
+		[data-event-archive] > .event-year:first-child {
+			margin-bottom: 0.65rem;
+		}
+
+		[data-event-archive] .event-year__text {
+			font-size: 1.05rem;
+		}
+	}
+</style>
+
+<style>
+	.event-item :global(.archive-card) {
+		border-bottom: 1px solid var(--line);
+		border-top: 1px solid var(--line);
+	}
+
+	.event-item + .event-item :global(.archive-card) {
+		border-top: none;
+	}
+
+	@media (max-width: 759px) {
+		.event-item :global(.archive-card__main) {
+			flex: 1;
+			min-width: 0;
+			overflow: visible;
+		}
+
+		.event-item :global(.archive-card--strip .archive-card__title) {
+			--event-title-squeeze: 0.7;
+			flex: 1;
+			font-size: 1.1rem;
+			font-weight: 700;
+			letter-spacing: -0.02em;
+			line-height: 1.2;
+			min-width: 0;
+			overflow: visible;
+		}
+
+		.event-item :global(.archive-card--strip .archive-card__title a),
+		.event-item :global(.archive-card--strip .archive-card__title span) {
+			display: inline-block;
+			transform: scaleX(var(--event-title-squeeze));
+			transform-origin: left center;
+			white-space: nowrap;
+			width: calc(100% / var(--event-title-squeeze));
+		}
+	}
+</style>
+
+<script>
+	import { formatTodayLabel, getTokyoDateKey } from '../../lib/date';
+
+	function createYearLabel(year: string) {
+		const label = document.createElement('p');
+		label.className = 'event-year';
+		const text = document.createElement('span');
+		text.className = 'event-year__text';
+		text.textContent = `${year}年`;
+		label.append(text);
+		return label;
+	}
+
+	function rebuildEventArchive() {
+		const list = document.querySelector<HTMLElement>('[data-event-archive]');
+		if (!list) return;
+
+		const todayKey = getTokyoDateKey();
+		const todayLabel = formatTodayLabel();
+		const todayEl = list.querySelector<HTMLElement>('[data-event-today]');
+		const items = Array.from(list.querySelectorAll<HTMLElement>('.event-item'));
+
+		const upcoming = items
+			.filter((el) => (el.dataset.date ?? '') >= todayKey)
+			.sort((a, b) => (b.dataset.date ?? '').localeCompare(a.dataset.date ?? ''));
+		const past = items
+			.filter((el) => (el.dataset.date ?? '') < todayKey)
+			.sort((a, b) => (b.dataset.date ?? '').localeCompare(a.dataset.date ?? ''));
+
+		list.querySelectorAll('.event-year').forEach((el) => el.remove());
+
+		const frag = document.createDocumentFragment();
+
+		const appendGroup = (group: HTMLElement[], yearOnFirst: boolean) => {
+			let prevYear: string | null = null;
+			for (const item of group) {
+				const year = item.dataset.year ?? '';
+				const showYear = yearOnFirst
+					? prevYear === null || prevYear !== year
+					: prevYear !== null && prevYear !== year;
+				if (showYear && year) {
+					frag.appendChild(createYearLabel(year));
+				}
+				frag.appendChild(item);
+				prevYear = year;
+			}
+		};
+
+		appendGroup(upcoming, true);
+
+		if (todayEl) {
+			todayEl.textContent = `本日　${todayLabel}`;
+			todayEl.hidden = past.length === 0;
+			if (past.length > 0) frag.appendChild(todayEl);
+		}
+
+		appendGroup(past, false);
+		list.appendChild(frag);
+	}
+
+	rebuildEventArchive();
+	document.addEventListener('astro:page-load', rebuildEventArchive);
+</script>

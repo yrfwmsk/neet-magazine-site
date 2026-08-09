@@ -1,0 +1,298 @@
+---
+interface Props {
+	pdfPath: string;
+	title: string;
+	backHref: string;
+}
+const { pdfPath, title, backHref } = Astro.props;
+---
+
+<div class="pdf-viewer" data-pdf-viewer data-pdf-path={pdfPath}>
+	<header class="pdf-viewer__bar">
+		<a class="pdf-viewer__back" href={backHref}>← 戻る</a>
+		<p class="pdf-viewer__title">{title}</p>
+		<div class="pdf-viewer__controls">
+			<button type="button" data-pdf-next class="pdf-viewer__btn" aria-label="次へ（左めくり）">←</button>
+			<span data-pdf-page class="pdf-viewer__page">読み込み中</span>
+			<button type="button" data-pdf-prev class="pdf-viewer__btn" aria-label="前へ">→</button>
+		</div>
+	</header>
+	<div class="pdf-viewer__stage" data-pdf-stage>
+		<div class="pdf-spread" data-pdf-spread>
+			<div class="pdf-page pdf-page--left">
+				<canvas data-pdf-left></canvas>
+			</div>
+			<div class="pdf-page pdf-page--right">
+				<canvas data-pdf-right></canvas>
+			</div>
+		</div>
+	</div>
+	<p data-pdf-message class="pdf-viewer__hint">右綴じ：← で次へ、→ で戻る（キーボードの左右キーも同じ）</p>
+</div>
+
+<style>
+	.pdf-viewer {
+		display: flex;
+		flex-direction: column;
+		height: 100dvh;
+		max-height: 100dvh;
+		background: #1a1a1a;
+		color: #f2f2f2;
+	}
+	.pdf-viewer__bar {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		gap: 0.75rem 1rem;
+		padding: 0.65rem 1rem;
+		border-bottom: 1px solid #3a3a3a;
+		flex-shrink: 0;
+	}
+	.pdf-viewer__back {
+		justify-self: start;
+		color: inherit;
+		text-decoration: none;
+		font-size: 0.875rem;
+	}
+	.pdf-viewer__back:hover {
+		text-decoration: underline;
+	}
+	.pdf-viewer__title {
+		margin: 0;
+		justify-self: center;
+		text-align: center;
+		font-size: 0.875rem;
+		font-weight: 700;
+	}
+	.pdf-viewer__controls {
+		justify-self: end;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.875rem;
+	}
+	.pdf-viewer__btn {
+		border: 1px solid #5a5a5a;
+		background: #2a2a2a;
+		color: inherit;
+		padding: 0.25rem 0.65rem;
+		cursor: pointer;
+	}
+	.pdf-viewer__btn:hover {
+		background: #3a3a3a;
+	}
+	.pdf-viewer__page {
+		min-width: 6.5rem;
+		text-align: center;
+		font-variant-numeric: tabular-nums;
+	}
+	.pdf-viewer__stage {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.5rem;
+	}
+	.pdf-spread {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0;
+		width: max-content;
+		max-width: 100%;
+		max-height: 100%;
+		box-shadow: 0 0 0 1px #333;
+	}
+	.pdf-viewer[data-solo='true'] .pdf-spread {
+		grid-template-columns: 1fr;
+	}
+	.pdf-viewer[data-solo='true'] .pdf-page--left {
+		display: none;
+	}
+	.pdf-page {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: #111;
+		min-width: 0;
+	}
+	.pdf-page canvas {
+		display: block;
+		max-width: 100%;
+		max-height: calc(100dvh - 5.5rem);
+		width: auto;
+		height: auto;
+		background: #fff;
+	}
+	.pdf-page.is-empty canvas {
+		background: transparent;
+	}
+	.pdf-viewer__hint {
+		margin: 0;
+		padding: 0.4rem 1rem 0.65rem;
+		font-size: 0.75rem;
+		color: #9a9a9a;
+		flex-shrink: 0;
+	}
+</style>
+
+<script>
+	import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+	import pdfWorker from 'pdfjs-dist/legacy/build/pdf.worker.mjs?url';
+
+	pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+
+	/** スマホ・タブレットは1枚表示 */
+	const SINGLE_QUERY = '(max-width: 1024px)';
+
+	document.querySelectorAll<HTMLElement>('[data-pdf-viewer]').forEach(async (viewer) => {
+		const path = viewer.dataset.pdfPath;
+		const stage = viewer.querySelector<HTMLElement>('[data-pdf-stage]');
+		const leftCanvas = viewer.querySelector<HTMLCanvasElement>('[data-pdf-left]');
+		const rightCanvas = viewer.querySelector<HTMLCanvasElement>('[data-pdf-right]');
+		const leftPane = viewer.querySelector<HTMLElement>('.pdf-page--left');
+		const rightPane = viewer.querySelector<HTMLElement>('.pdf-page--right');
+		const pageLabel = viewer.querySelector<HTMLElement>('[data-pdf-page]');
+		const message = viewer.querySelector<HTMLElement>('[data-pdf-message]');
+		if (!path || !stage || !leftCanvas || !rightCanvas || !leftPane || !rightPane || !pageLabel || !message) return;
+
+		type PdfDoc = Awaited<ReturnType<typeof pdfjsLib.getDocument>>['promise'] extends Promise<infer T> ? T : never;
+		let pdf: PdfDoc;
+		/** 単ページ: 表示中ページ / 見開き: 右ページ番号（表紙は1で単独） */
+		let page = 1;
+		let wasSingle = window.matchMedia(SINGLE_QUERY).matches;
+		let rendering = false;
+		let queued = false;
+
+		const isSingle = () => window.matchMedia(SINGLE_QUERY).matches;
+
+		/** 見開きモード用に、単ページ位置を右ページ起点へ揃える */
+		const toSpreadPage = (n: number) => {
+			if (n <= 1) return 1;
+			return n % 2 === 0 ? n : n - 1;
+		};
+
+		const syncMode = () => {
+			const single = isSingle();
+			if (single === wasSingle) return;
+			if (!single) page = toSpreadPage(page);
+			wasSingle = single;
+		};
+
+		const clearCanvas = (canvas: HTMLCanvasElement) => {
+			const context = canvas.getContext('2d');
+			canvas.width = 1;
+			canvas.height = 1;
+			context?.clearRect(0, 0, 1, 1);
+		};
+
+		const fitScale = async (cols: number) => {
+			const probePage = await pdf.getPage(Math.min(page, pdf.numPages));
+			const base = probePage.getViewport({ scale: 1 });
+			const scaleW = stage.clientWidth / (base.width * cols);
+			const scaleH = stage.clientHeight / base.height;
+			return Math.max(0.4, Math.min(scaleW, scaleH) * 0.98);
+		};
+
+		const renderInto = async (canvas: HTMLCanvasElement, pageNum: number | null, scale: number) => {
+			if (!pageNum || pageNum < 1 || pageNum > pdf.numPages) {
+				clearCanvas(canvas);
+				return false;
+			}
+			const current = await pdf.getPage(pageNum);
+			const viewport = current.getViewport({ scale });
+			const context = canvas.getContext('2d');
+			if (!context) return false;
+			canvas.width = viewport.width;
+			canvas.height = viewport.height;
+			await current.render({ canvasContext: context, canvas, viewport }).promise;
+			return true;
+		};
+
+		const lastShownPage = () => {
+			if (isSingle() || page === 1) return page;
+			return Math.min(page + 1, pdf.numPages);
+		};
+
+		const renderView = async () => {
+			if (rendering) {
+				queued = true;
+				return;
+			}
+			rendering = true;
+			try {
+				syncMode();
+				const single = isSingle();
+				viewer.dataset.solo = single || page === 1 ? 'true' : 'false';
+
+				if (single) {
+					const scale = await fitScale(1);
+					const hasRight = await renderInto(rightCanvas, page, scale);
+					clearCanvas(leftCanvas);
+					rightPane.classList.toggle('is-empty', !hasRight);
+					leftPane.classList.add('is-empty');
+					pageLabel.textContent = `${page} / ${pdf.numPages}`;
+					message.textContent = '1枚表示：← で次へ、→ で戻る（キーボードの左右キーも同じ）';
+				} else {
+					const scale = await fitScale(page === 1 ? 1 : 2);
+					const leftPage = page === 1 ? null : page + 1;
+					const hasRight = await renderInto(rightCanvas, page, scale);
+					const hasLeft = await renderInto(leftCanvas, leftPage, scale);
+					rightPane.classList.toggle('is-empty', !hasRight);
+					leftPane.classList.toggle('is-empty', !hasLeft);
+					if (page === 1 || !leftPage || leftPage > pdf.numPages) {
+						pageLabel.textContent = `${page} / ${pdf.numPages}`;
+					} else {
+						pageLabel.textContent = `${page}–${leftPage} / ${pdf.numPages}`;
+					}
+					message.textContent = '右綴じ見開き：← で次へ、→ で戻る（キーボードの左右キーも同じ）';
+				}
+			} finally {
+				rendering = false;
+				if (queued) {
+					queued = false;
+					await renderView();
+				}
+			}
+		};
+
+		const goNext = async () => {
+			if (lastShownPage() >= pdf.numPages) return;
+			if (isSingle()) page += 1;
+			else page = page === 1 ? 2 : page + 2;
+			await renderView();
+		};
+
+		const goPrev = async () => {
+			if (page <= 1) return;
+			if (isSingle()) page -= 1;
+			else page = page === 2 ? 1 : page - 2;
+			await renderView();
+		};
+
+		try {
+			pdf = await pdfjsLib.getDocument({ url: path }).promise;
+			await renderView();
+
+			viewer.querySelector('[data-pdf-next]')?.addEventListener('click', () => void goNext());
+			viewer.querySelector('[data-pdf-prev]')?.addEventListener('click', () => void goPrev());
+
+			window.addEventListener('keydown', (event) => {
+				if (event.key === 'ArrowLeft') {
+					event.preventDefault();
+					void goNext();
+				} else if (event.key === 'ArrowRight') {
+					event.preventDefault();
+					void goPrev();
+				}
+			});
+
+			window.matchMedia(SINGLE_QUERY).addEventListener('change', () => void renderView());
+			new ResizeObserver(() => void renderView()).observe(stage);
+		} catch (error) {
+			console.error('PDF viewer failed:', error);
+			pageLabel.textContent = '利用不可';
+			message.textContent = 'PDFを読み込めませんでした。公開用PDFが配置されているか確認してください。';
+		}
+	});
+</script>

@@ -1,0 +1,128 @@
+---
+import ArticleLayoutTestBody from '../../../components/ArticleLayoutTestBody.astro';
+import ArticleLayoutTestNav from '../../../components/ArticleLayoutTestNav.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { SAMPLE_ARTICLES, SAMPLE_CURRENT } from '../../../lib/article-layout-test';
+---
+
+<BaseLayout title="記事レイアウト · 案E | ニートマガジン">
+	<section class="shell py-16 md:py-24">
+		<p class="eyebrow">TEST E</p>
+		<h1 class="mt-4 text-3xl font-black md:text-4xl">号メニュー（全幅統一）</h1>
+		<p class="mt-4 max-w-xl text-sm text-[var(--muted)]">
+			右サイドを常時出さない。タイトル上の「この号」メニューから一覧を開く案。画面サイズで挙動を揃えやすい。
+		</p>
+		<ArticleLayoutTestNav current="e" />
+
+		<article class="mt-14 min-w-0">
+			<div class="layout-test-issue-menu">
+				<details class="layout-test-issue-menu__details">
+					<summary class="layout-test-issue-menu__summary">この号</summary>
+					<div class="layout-test-issue-menu__panel" role="menu">
+						<p class="layout-test-issue-menu__heading">vol2 · 記事一覧</p>
+						{SAMPLE_ARTICLES.map((item) => {
+							const isCurrent = item.slug === SAMPLE_CURRENT.slug;
+							return isCurrent
+								? <span class="layout-test-issue-menu__current" aria-current="page" role="menuitem">{item.order}. {item.title}</span>
+								: <a href={`/magazines/vol2/${item.slug}`} role="menuitem">{item.order}. {item.title}</a>;
+						})}
+						<a class="layout-test-issue-menu__all" href="/magazines/vol2">号ページを開く →</a>
+					</div>
+				</details>
+			</div>
+
+			<ArticleLayoutTestBody />
+			<a class="mt-12 inline-block" href="/magazines/vol2">← vol2 へ戻る</a>
+		</article>
+	</section>
+</BaseLayout>
+
+<style>
+	.layout-test-issue-menu {
+		display: flex;
+		justify-content: flex-end;
+		margin-bottom: 1.25rem;
+	}
+
+	.layout-test-issue-menu__details {
+		position: relative;
+	}
+
+	.layout-test-issue-menu__summary {
+		border: 1px solid var(--line);
+		cursor: pointer;
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		list-style: none;
+		padding: 0.45rem 0.75rem;
+		user-select: none;
+	}
+
+	.layout-test-issue-menu__summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.layout-test-issue-menu__panel {
+		background: var(--page);
+		border: 1px solid var(--line);
+		display: grid;
+		gap: 0.55rem;
+		margin-top: 0.4rem;
+		max-height: min(70vh, 28rem);
+		min-width: min(18rem, calc(100vw - 3rem));
+		overflow: auto;
+		padding: 0.9rem 1rem 1rem;
+		position: absolute;
+		right: 0;
+		top: 100%;
+		z-index: 5;
+	}
+
+	.layout-test-issue-menu__heading {
+		color: var(--muted);
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		margin: 0 0 0.35rem;
+		text-transform: uppercase;
+	}
+
+	.layout-test-issue-menu__panel a,
+	.layout-test-issue-menu__current {
+		display: block;
+		font-size: 0.9rem;
+		line-height: 1.4;
+		text-decoration: none;
+	}
+
+	.layout-test-issue-menu__current {
+		font-weight: 700;
+	}
+
+	.layout-test-issue-menu__all {
+		border-top: 1px solid var(--line);
+		color: var(--muted);
+		font-size: 0.8rem;
+		margin-top: 0.35rem;
+		padding-top: 0.75rem;
+	}
+
+	.layout-test-issue-menu__panel a:hover {
+		opacity: 0.62;
+	}
+</style>
+
+<script>
+	const root = document.querySelector('.layout-test-issue-menu__details');
+	if (root instanceof HTMLDetailsElement) {
+		document.addEventListener('click', (event) => {
+			if (!root.open) return;
+			if (event.target instanceof Node && root.contains(event.target)) return;
+			root.open = false;
+		});
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape') root.open = false;
+		});
+	}
+</script>

@@ -1,0 +1,87 @@
+---
+import ArticleLayoutTestBody from '../../../components/ArticleLayoutTestBody.astro';
+import ArticleLayoutTestNav from '../../../components/ArticleLayoutTestNav.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { SAMPLE_NEXT, SAMPLE_PREV } from '../../../lib/article-layout-test';
+---
+
+<BaseLayout title="記事レイアウト · 案D | ニートマガジン">
+	<section class="shell py-16 md:py-24">
+		<p class="eyebrow">TEST D</p>
+		<h1 class="mt-4 text-3xl font-black md:text-4xl">前後ナビ</h1>
+		<p class="mt-4 max-w-xl text-sm text-[var(--muted)]">
+			右サイドなし。文末に「前の記事 / 次の記事」だけ置く案。任意ジャンプは号ページへ任せる。
+		</p>
+		<ArticleLayoutTestNav current="d" />
+
+		<article class="mt-14 min-w-0">
+			<ArticleLayoutTestBody />
+
+			<nav class="layout-test-pager" aria-label="前後の記事">
+				<a class="layout-test-pager__item" href={`/magazines/vol2/${SAMPLE_PREV.slug}`}>
+					<span class="layout-test-pager__label">前の記事</span>
+					<span class="layout-test-pager__title">{SAMPLE_PREV.title}</span>
+					<span class="layout-test-pager__author">{SAMPLE_PREV.author}</span>
+				</a>
+				<a class="layout-test-pager__item layout-test-pager__item--next" href={`/magazines/vol2/${SAMPLE_NEXT.slug}`}>
+					<span class="layout-test-pager__label">次の記事</span>
+					<span class="layout-test-pager__title">{SAMPLE_NEXT.title}</span>
+					<span class="layout-test-pager__author">{SAMPLE_NEXT.author}</span>
+				</a>
+			</nav>
+
+			<a class="mt-10 inline-block" href="/magazines/vol2">← vol2 へ戻る · この号の全記事</a>
+		</article>
+	</section>
+</BaseLayout>
+
+<style>
+	.layout-test-pager {
+		border-top: 1px solid var(--line);
+		display: grid;
+		gap: 1.5rem;
+		margin-top: 3.5rem;
+		padding-top: 1.75rem;
+	}
+
+	@media (min-width: 640px) {
+		.layout-test-pager {
+			grid-template-columns: 1fr 1fr;
+			gap: 2rem;
+		}
+	}
+
+	.layout-test-pager__item {
+		display: grid;
+		gap: 0.35rem;
+		min-width: 0;
+		text-decoration: none;
+	}
+
+	.layout-test-pager__item--next {
+		text-align: right;
+	}
+
+	.layout-test-pager__label {
+		color: var(--muted);
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+
+	.layout-test-pager__title {
+		font-size: 1.05rem;
+		font-weight: 700;
+		line-height: 1.4;
+	}
+
+	.layout-test-pager__author {
+		color: var(--muted);
+		font-size: 0.85rem;
+	}
+
+	.layout-test-pager__item:hover {
+		opacity: 0.7;
+	}
+</style>

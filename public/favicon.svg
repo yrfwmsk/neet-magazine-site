@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="ニートマガジン">
+	<style>
+		.bg { fill: #fdfdfc; }
+		.fg { fill: #171717; }
+		@media (prefers-color-scheme: dark) {
+			.bg { fill: #1f1c1d; }
+			.fg { fill: #f5f2f2; }
+		}
+	</style>
+	<rect class="bg" width="32" height="32" />
+	<!-- ロゴ書体の「ニ」を簡略化したマーク -->
+	<rect class="fg" x="6" y="9" width="20" height="5" />
+	<rect class="fg" x="6" y="18" width="20" height="5" />
+</svg>

@@ -1,0 +1,101 @@
+---
+import AccentTestNav from '../../../components/AccentTestNav.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getAccentTestMagazines, volumeLabel } from '../../../lib/accent-test';
+import { formatDate } from '../../../lib/date';
+
+const magazines = await getAccentTestMagazines();
+---
+
+<BaseLayout title="アクセント案 C · 号数字 | ニートマガジン">
+	<section class="shell py-16 md:py-24">
+		<p class="eyebrow">TEST C</p>
+		<h1 class="mt-4 text-3xl font-black md:text-4xl">号数字アクセント</h1>
+		<p class="mt-4 max-w-xl text-sm text-[var(--muted)]">
+			大きな号数字をイメージカラーで置く案。色面ではなくタイポで号を識別する。
+		</p>
+		<AccentTestNav current="c" />
+
+		<div class="test-c mt-12">
+			{magazines.map((magazine) => (
+				<article class="test-c__item" style={`--accent: ${magazine.accentColor}`}>
+					<span class="test-c__num" aria-hidden="true">{volumeLabel(magazine.volume)}</span>
+					<div class="test-c__body">
+						<h2 class="test-c__title">
+							<a href={magazine.href}>{magazine.title}</a>
+						</h2>
+						<p class="test-c__desc">{magazine.summary}</p>
+						<p class="test-c__meta">{formatDate(magazine.publishedAt)}</p>
+					</div>
+				</article>
+			))}
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.test-c {
+		display: grid;
+		gap: 0;
+	}
+
+	@media (min-width: 768px) {
+		.test-c {
+			grid-template-columns: 1fr 1fr;
+			column-gap: 3.5rem;
+		}
+	}
+
+	.test-c__item {
+		align-items: flex-start;
+		border-top: 1px solid var(--line);
+		display: flex;
+		gap: 1rem;
+		padding: 1.5rem 0 1.85rem;
+	}
+
+	.test-c__num {
+		color: var(--accent);
+		flex-shrink: 0;
+		font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+		font-size: 2.6rem;
+		font-weight: 900;
+		letter-spacing: -0.06em;
+		line-height: 0.9;
+		min-width: 2.2rem;
+		padding-top: 0.15rem;
+		text-align: right;
+	}
+
+	.test-c__body {
+		min-width: 0;
+	}
+
+	.test-c__title {
+		font-size: 1.1rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1.45;
+		margin: 0;
+	}
+
+	.test-c__desc {
+		color: var(--muted);
+		font-size: 0.88rem;
+		line-height: 1.65;
+		margin: 0.45rem 0 0;
+	}
+
+	.test-c__meta {
+		color: var(--muted);
+		font-size: 0.78rem;
+		margin: 0.75rem 0 0;
+	}
+
+	@media (min-width: 768px) {
+		.test-c__num {
+			font-size: 3rem;
+			min-width: 2.5rem;
+		}
+	}
+</style>

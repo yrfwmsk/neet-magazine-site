@@ -1,0 +1,87 @@
+---
+import ArticleLayoutTestBody from '../../../components/ArticleLayoutTestBody.astro';
+import ArticleLayoutTestNav from '../../../components/ArticleLayoutTestNav.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { SAMPLE_ARTICLES, SAMPLE_CURRENT } from '../../../lib/article-layout-test';
+---
+
+<BaseLayout title="記事レイアウト · 案B | ニートマガジン">
+	<section class="shell py-16 md:py-24">
+		<p class="eyebrow">TEST B</p>
+		<h1 class="mt-4 text-3xl font-black md:text-4xl">折りたたみ一覧</h1>
+		<p class="mt-4 max-w-xl text-sm text-[var(--muted)]">
+			記事一覧を details に格納。デフォルトは閉じた状態。本文は常にヘッダー幅のシングルカラム。
+		</p>
+		<ArticleLayoutTestNav current="b" />
+
+		<article class="mt-14 min-w-0">
+			<details class="layout-test-fold">
+				<summary class="layout-test-fold__summary">この号の記事（{SAMPLE_ARTICLES.length}）</summary>
+				<div class="layout-test-fold__list">
+					{SAMPLE_ARTICLES.map((item) => {
+						const isCurrent = item.slug === SAMPLE_CURRENT.slug;
+						return isCurrent
+							? <span class="layout-test-fold__current" aria-current="page">{item.order}. {item.title}</span>
+							: <a href={`/magazines/vol2/${item.slug}`}>{item.order}. {item.title}</a>;
+					})}
+				</div>
+			</details>
+
+			<ArticleLayoutTestBody />
+			<a class="mt-12 inline-block" href="/magazines/vol2">← vol2 へ戻る</a>
+		</article>
+	</section>
+</BaseLayout>
+
+<style>
+	.layout-test-fold {
+		border: 1px solid var(--line);
+		margin-bottom: 2.5rem;
+		padding: 0.85rem 1rem;
+	}
+
+	.layout-test-fold__summary {
+		cursor: pointer;
+		font-size: 0.85rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		list-style: none;
+	}
+
+	.layout-test-fold__summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.layout-test-fold__summary::before {
+		content: '+ ';
+		color: var(--muted);
+	}
+
+	.layout-test-fold[open] .layout-test-fold__summary::before {
+		content: '− ';
+	}
+
+	.layout-test-fold__list {
+		display: grid;
+		gap: 0.65rem;
+		margin-top: 1rem;
+		padding-top: 0.85rem;
+		border-top: 1px solid var(--line);
+	}
+
+	.layout-test-fold__list a,
+	.layout-test-fold__current {
+		display: block;
+		font-size: 0.92rem;
+		line-height: 1.45;
+		text-decoration: none;
+	}
+
+	.layout-test-fold__current {
+		font-weight: 700;
+	}
+
+	.layout-test-fold__list a:hover {
+		opacity: 0.62;
+	}
+</style>
