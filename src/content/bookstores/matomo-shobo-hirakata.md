@@ -6,5 +6,6 @@ access: 京阪枚方公園駅東口から徒歩約3分。
 prefecture: 大阪府
 address: 枚方市枚方元町4-70 白-2（長屋つぎのひ）
 url: https://matomo-shobo.com/
+mapsUrl: https://maps.app.goo.gl/uVaJSboFwEYgB8Ch7
 order: 4
 ---

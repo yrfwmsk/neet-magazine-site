@@ -58,8 +58,18 @@ function formatPeriod(start?: Date, end?: Date) {
 								</svg>
 								アクセス方法
 							</p>
-							{location && <p class="bookstore-item__address">{location}</p>}
-							<p class="bookstore-item__text">{item.data.access}</p>
+							{location && (
+								<p class="bookstore-item__address">
+									{item.data.mapsUrl ? (
+										<a href={item.data.mapsUrl} target="_blank" rel="noopener noreferrer">
+											{location}
+										</a>
+									) : (
+										location
+									)}
+								</p>
+							)}
+							<p class="bookstore-item__text" x-apple-data-detectors="false">{item.data.access}</p>
 						</div>
 					</div>
 				</li>
@@ -142,6 +152,13 @@ function formatPeriod(start?: Date, end?: Date) {
 		font-size: 0.9rem;
 		line-height: 1.7;
 		margin: 0 0 0.25rem;
+	}
+
+	.bookstore-item__address a {
+		color: inherit;
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 0.18em;
 	}
 
 	.bookstore-item__text {

@@ -6,5 +6,6 @@ access: 神保町駅 A7出口から徒歩約1分。
 prefecture: 東京都
 address: 千代田区神田神保町1-9-20 SHONENGAHO-2ビル 1-2F
 url: https://passage.allreviews.jp/
+mapsUrl: https://maps.app.goo.gl/ePMuUsRuRbH27XUZ7
 order: 3
 ---

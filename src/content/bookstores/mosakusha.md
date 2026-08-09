@@ -6,5 +6,6 @@ access: 新宿三丁目駅・新宿御苑前駅から徒歩約4分。
 prefecture: 東京都
 address: 新宿区新宿2-4-9
 url: https://mosakusha.com/
+mapsUrl: https://maps.app.goo.gl/N7eZ6xZ4ZSAYFbTg7
 order: 2
 ---

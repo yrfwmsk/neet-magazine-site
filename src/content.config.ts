@@ -125,6 +125,8 @@ const bookstores = defineCollection({
 		prefecture: z.string().optional(),
 		address: z.string().optional(),
 		url: z.string().url().optional(),
+		/** Google マップ（店舗ピン） */
+		mapsUrl: z.string().url().optional(),
 		/** 取扱開始（おおよその年月でよい） */
 		startedAt: z.coerce.date().optional(),
 		/** 取扱終了（archived のとき） */

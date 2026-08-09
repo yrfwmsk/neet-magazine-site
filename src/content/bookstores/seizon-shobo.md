@@ -6,5 +6,6 @@ access: 土浦駅東口・西口ともに徒歩約5分。
 prefecture: 茨城県
 address: 土浦市川口2-2-12
 url: https://seizonshobo.com/
+mapsUrl: https://maps.app.goo.gl/nDb8hQbmcELBJebu6
 order: 1
 ---

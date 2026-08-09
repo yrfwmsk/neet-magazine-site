@@ -35,7 +35,7 @@ const eventHref = nextEvent ? `/events/${nextEvent.id}` : '/events';
 			<div class="cover-hero__copy">
 				<p class="data-label">NEET MAGAZINE / DIGITAL_ARCHIVE</p>
 				<h1>
-					<span class="copy-line copy-line--lead"><span class="copy-unit copy-unit--hang">「<span class="copy-open-gap" aria-hidden="true"></span>働きたくない」から始まる</span></span>
+					<span class="copy-line copy-line--lead"><span class="copy-unit copy-unit--hang">「<span class="copy-open-gap" aria-hidden="true"></span>働きたくない」</span><span class="copy-unit">から</span><span class="copy-unit">始まる</span></span>
 					<span class="copy-line copy-line--magazine"><span class="copy-unit">オルタナティブ・</span><span class="copy-unit">ライフ・マガジン</span></span>
 				</h1>
 				<p class="cover-hero__lead">ニート/フリーター/会社員が肩書きを超えて集い<br />独自のニート論や実践的ノウハウを寄稿する<br />2020年代ニート・カルチャーの震源地です。</p>
@@ -273,7 +273,8 @@ const eventHref = nextEvent ? `/events/${nextEvent.id}` : '/events';
 		.event-studies {
 			margin-bottom: 1.5rem;
 		}
-		.cover-hero { grid-template-columns: 1.05fr .95fr; }
-		.cover-hero__visual { min-height: min(535px, 65vh); }
+		.cover-hero { grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); }
+		.cover-hero__copy { min-width: 0; }
+		.cover-hero__visual { min-height: min(535px, 65vh); min-width: 0; }
 	}
 </style>
