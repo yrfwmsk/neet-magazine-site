@@ -3,7 +3,7 @@ import {
 	formatContactEmail,
 	validateContactSubmission,
 	type ContactSubmission,
-} from '../../src/lib/contact';
+} from '../../src/lib/contact-shared';
 
 type ContactEnv = {
 	RESEND_API_KEY?: string;
