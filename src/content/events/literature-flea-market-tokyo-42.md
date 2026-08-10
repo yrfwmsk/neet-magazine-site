@@ -7,5 +7,3 @@ status: past
 latestVolume: 4
 soldVolumes: [3, 4]
 ---
-
-テスト
