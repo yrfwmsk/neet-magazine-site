@@ -165,30 +165,46 @@ const { upcoming, past } = partitionByTodayDateKey(items, todayKey);
 	}
 
 	@media (max-width: 759px) {
+		/* iPhone SE2 (375px) 基準: 横圧縮せず、最長タイトルは2行で区切り線内に収める */
+		.event-item :global(.archive-card--strip) {
+			align-items: center;
+			gap: 0.7rem;
+			/* 行線と文字のあいだに十分な余白 */
+			padding-block: 0.6rem;
+		}
+
+		.event-item :global(.archive-card--strip .archive-card__body) {
+			align-items: center;
+			gap: 0;
+			min-width: 0;
+		}
+
 		.event-item :global(.archive-card__main) {
 			flex: 1;
 			min-width: 0;
-			overflow: visible;
+			overflow: hidden;
 		}
 
 		.event-item :global(.archive-card--strip .archive-card__title) {
-			--event-title-squeeze: 0.7;
-			flex: 1;
-			font-size: 1.1rem;
+			flex: 1 1 auto;
+			font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "YuGothic", sans-serif;
+			font-size: 0.9375rem;
 			font-weight: 700;
-			letter-spacing: -0.02em;
-			line-height: 1.2;
+			letter-spacing: -0.025em;
+			line-height: 1.35;
 			min-width: 0;
-			overflow: visible;
+			overflow: hidden;
+			white-space: normal;
 		}
 
 		.event-item :global(.archive-card--strip .archive-card__title a),
 		.event-item :global(.archive-card--strip .archive-card__title span) {
-			display: inline-block;
-			transform: scaleX(var(--event-title-squeeze));
-			transform-origin: left center;
-			white-space: nowrap;
-			width: calc(100% / var(--event-title-squeeze));
+			display: block;
+			overflow-wrap: anywhere;
+			transform: none;
+			white-space: normal;
+			width: auto;
+			word-break: break-word;
 		}
 
 		/* スマホは日付＋イベント名のみ */
