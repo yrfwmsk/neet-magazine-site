@@ -32,11 +32,16 @@ function tocEyebrows(
 	issueFeatureTitle?: string,
 	format?: string,
 	issueEmergencyFeatureTitle?: string,
+	/** false のときスペシャルゲストを特集枠に併記しない */
+	featureContribution?: boolean,
 ): string[] {
 	if (!section) return format ? [format] : [];
 	let labels: string[];
-	if (section === 'スペシャルゲスト' && issueFeatureTitle) {
-		labels = ['スペシャルゲスト', `特集：${issueFeatureTitle}`];
+	if (section === 'スペシャルゲスト') {
+		labels =
+			issueFeatureTitle && featureContribution !== false
+				? ['スペシャルゲスト', `特集：${issueFeatureTitle}`]
+				: ['スペシャルゲスト'];
 	} else if (section === '特集' || section === '特集寄稿') {
 		labels = [issueFeatureTitle ? `特集：${issueFeatureTitle}` : '特集'];
 	} else if (section === '緊急特集') {
@@ -95,7 +100,13 @@ function tocEyebrows(
 					<div class="mt-4">
 						{articles.map((article) => (
 							<ArchiveCard
-								eyebrows={tocEyebrows(article.data.section, featureTitle, article.data.format, emergencyFeatureTitle)}
+								eyebrows={tocEyebrows(
+									article.data.section,
+									featureTitle,
+									article.data.format,
+									emergencyFeatureTitle,
+									article.data.featureContribution,
+								)}
 								title={article.data.title}
 								href={`/magazines/${magazine.data.volume}/${article.id.split('/').at(-1)}`}
 								meta={article.data.author}

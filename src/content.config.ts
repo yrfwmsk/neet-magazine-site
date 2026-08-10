@@ -66,6 +66,11 @@ const articles = defineCollection({
 				'往復書簡',
 			])
 			.optional(),
+		/**
+		 * スペシャルゲストが特集への寄稿かどうか。
+		 * false のとき目次で「特集：…」を併記しない（ゲストのみ）。
+		 */
+		featureContribution: z.boolean().optional(),
 		/** 目次上で区分の後に表示する作品形式 */
 		format: z.enum(['漫画']).optional(),
 		order: z.number().default(0),
