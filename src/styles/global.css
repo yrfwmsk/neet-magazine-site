@@ -1094,8 +1094,10 @@ article:has(.prose--z-generation) .author-afterword__avatar[src*="shakai-fukki"]
 	font-weight: 900;
 	height: 1.4rem;
 	justify-content: center;
-	letter-spacing: -.04em;
+	letter-spacing: 0;
 	line-height: 1;
+	/* 明朝体数字の光学的な右下寄りを補正して円の中央に見せる */
+	transform: translate(-0.04em, -0.06em);
 	width: 1.4rem;
 }
 .event-volumes__item.is-sold {

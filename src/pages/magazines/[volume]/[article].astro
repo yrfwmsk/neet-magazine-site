@@ -52,8 +52,8 @@ const articleSlug = article.id.split('/').at(-1) ?? '';
 				<h1 class="archive-locked__title">この記事はまだ公開されていません</h1>
 				<p class="archive-locked__text">
 					{magazine?.data.archiveAt
-						? <>Web無料アーカイブ公開日（{formatDateJa(magazine.data.archiveAt)}）以降に閲覧できます。</>
-						: <>Web無料アーカイブ公開後に閲覧できます。</>}
+						? <>Webアーカイブ公開日（{formatDateJa(magazine.data.archiveAt)}）以降に閲覧できます。</>
+						: <>Webアーカイブ公開後に閲覧できます。</>}
 				</p>
 				<a class="mt-12 inline-block" href={`/magazines/${article.data.volume}`}>← {volumeLabel} へ戻る</a>
 			</div>

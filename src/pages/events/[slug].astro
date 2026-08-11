@@ -45,7 +45,10 @@ const titleStartsWithOpenBracket = /^[『「]/.test(event.data.title);
 </BaseLayout>
 
 <style>
+	/* 『「 だけ左にぶら下げ、本文・折り返し行は通常タイトルと同じ左端に揃える */
 	.event-title--hang {
 		margin-left: -0.45em;
+		padding-left: 0.45em;
+		text-indent: -0.45em;
 	}
 </style>

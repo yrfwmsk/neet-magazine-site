@@ -73,8 +73,8 @@ const archiveAvailable = isArchiveAvailable(magazine.data.archiveAt);
 				<h1>PDFはまだ公開されていません</h1>
 				<p>
 					{magazine.data.archiveAt
-						? `Web無料アーカイブ公開日（${formatDateJa(magazine.data.archiveAt)}）以降に閲覧できます。`
-						: 'Web無料アーカイブ公開後に閲覧できます。'}
+						? `Webアーカイブ公開日（${formatDateJa(magazine.data.archiveAt)}）以降に閲覧できます。`
+						: 'Webアーカイブ公開後に閲覧できます。'}
 				</p>
 				<p><a href={`/magazines/${magazine.data.volume}`}>← {magazine.data.volume} へ戻る</a></p>
 			</div>

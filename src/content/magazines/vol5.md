@@ -4,7 +4,7 @@ title: ニートマガジン Vol.5
 publishedAt: 2026-09-13
 archiveAt: 2026-12-12
 summary: 不健康なニートたちが血で綴る第5号。
-price: 1500円
+price: 1,500円
 pageCount: 224
 pdfPath: /pdf/vol5.pdf
 cover: /images/covers/vol5.png

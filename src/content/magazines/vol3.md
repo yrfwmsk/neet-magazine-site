@@ -3,7 +3,7 @@ volume: vol3
 title: ニートマガジン Vol.3
 publishedAt: 2025-05-11
 summary: 深淵なるニート思想に潜る第3号。
-price: 1000円
+price: 1,000円
 pageCount: 140
 pdfPath: /pdf/vol3.pdf
 cover: /images/covers/vol3.png
