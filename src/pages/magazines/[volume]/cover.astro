@@ -17,7 +17,11 @@ const authorEntry = magazine.data.coverArtistId
 	: undefined;
 ---
 
-<BaseLayout title={`表紙イラスト ${magazine.data.coverArtist} | ${magazine.data.title}`}>
+<BaseLayout
+	title={`表紙イラスト ${magazine.data.coverArtist} | ${magazine.data.title}`}
+	description={`${magazine.data.title}の表紙イラスト担当・${magazine.data.coverArtist}のあとがき。ニートマガジン公式サイト。`}
+	image={magazine.data.cover}
+>
 	<section class="shell py-16 md:py-24">
 		<AuthorAfterword
 			penName={magazine.data.coverArtist!}

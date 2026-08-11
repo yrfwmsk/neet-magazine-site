@@ -3,13 +3,28 @@ import { getCollection } from 'astro:content';
 import FaqList from '../components/FaqList.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
+import { plainSearchText } from '../lib/search-text';
+import { truncateDescription } from '../lib/seo';
 
 const items = (await getCollection('qa')).sort((a, b) => a.data.order - b.data.order);
+const faqJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: items.map((item) => ({
+		'@type': 'Question',
+		name: item.data.question,
+		acceptedAnswer: {
+			'@type': 'Answer',
+			text: truncateDescription(plainSearchText(item.body), 300),
+		},
+	})),
+};
 ---
 
 <BaseLayout
 	title="Q&A | ニートマガジン"
-	description="ニートマガジンに関するよくある質問と回答です。"
+	description="ニートマガジンに関するよくある質問と回答です。参加方法、寄稿、イベントなどについてまとめています。"
+	jsonLd={faqJsonLd}
 >
 	<PageHero label="Q&A" title="よくある質問" />
 	<section class="shell pb-16 md:pb-24">

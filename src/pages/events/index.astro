@@ -25,7 +25,10 @@ const items = events.map((event) => ({
 const { upcoming, past } = partitionByTodayDateKey(items, todayKey);
 ---
 
-<BaseLayout title="イベント | ニートマガジン">
+<BaseLayout
+	title="イベント | ニートマガジン"
+	description="ニートマガジンの出店予定とこれまでの活動記録。文学フリマなどの即売会情報を掲載しています。"
+>
 	<PageHero label="EVENTS" title="イベント情報" />
 	<section class="shell pb-16 md:pb-24">
 		<p class="max-w-xl text-[var(--muted)]">出店予定と活動記録です。</p>

@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+Disallow: /*-tests
+Disallow: /magazines/accent-tests
+Disallow: /magazines/article-layout-tests
+Disallow: /home-banner-hover-tests
+Disallow: /home-feed-design-tests
+Disallow: /home-feed-redesign-tests
+
+Sitemap: https://neet-magazine.com/sitemap-index.xml

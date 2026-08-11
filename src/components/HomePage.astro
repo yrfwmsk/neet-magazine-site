@@ -5,6 +5,7 @@ import Search from './Search.astro';
 import { isVolumeArchiveAvailable } from '../lib/archive';
 import { getDateParts, getEventDateKey, getTokyoDateKey } from '../lib/date';
 import { plainSearchText } from '../lib/search-text';
+import { SITE_URL, absoluteUrl } from '../lib/seo';
 
 const events = await getCollection('events');
 const magazines = await getCollection('magazines');
@@ -25,20 +26,46 @@ const nextEvent = events
 	.sort((a, b) => a.key.localeCompare(b.key))[0]?.event;
 const eventDateParts = nextEvent ? getDateParts(nextEvent.data.date) : null;
 const eventHref = nextEvent ? `/events/${nextEvent.id}` : '/events';
+const homeDescription =
+	'ニートマガジンは、「働きたくない」から始まるオルタナティブ・ライフ・マガジン。ニート、フリーター、会社員が肩書きを超えて集う、2020年代ニート・カルチャーの震源地。';
+const jsonLd = [
+	{
+		'@context': 'https://schema.org',
+		'@type': 'WebSite',
+		name: 'ニートマガジン',
+		alternateName: ['NEET MAGAZINE', 'neet magazine'],
+		url: SITE_URL,
+		description: homeDescription,
+		inLanguage: 'ja',
+		publisher: { '@type': 'Organization', name: 'ニートマガジン', url: SITE_URL },
+	},
+	{
+		'@context': 'https://schema.org',
+		'@type': 'Organization',
+		name: 'ニートマガジン',
+		alternateName: 'NEET MAGAZINE',
+		url: SITE_URL,
+		logo: absoluteUrl('/neet-magazine-logo.png'),
+		description: homeDescription,
+	},
+];
 ---
 
 <BaseLayout
-	description="「働きたくない」から始まるオルタナティブ・ライフ・マガジン。ニート、フリーター、会社員が肩書きを超えて集う、2020年代ニート・カルチャーの震源地。"
+	title="ニートマガジン"
+	description={homeDescription}
+	image="/images/covers/vol5-complete.png"
+	jsonLd={jsonLd}
 >
 	<div class="study">
 		<section class="cover-hero">
 			<div class="cover-hero__copy">
-				<p class="data-label">NEET MAGAZINE / DIGITAL_ARCHIVE</p>
+				<p class="data-label">ニートマガジン / DIGITAL_ARCHIVE</p>
 				<h1>
 					<span class="copy-line copy-line--lead"><span class="copy-unit copy-unit--hang">「<span class="copy-open-gap" aria-hidden="true"></span>働きたくない」</span><span class="copy-unit">から</span><span class="copy-unit">始まる</span></span>
 					<span class="copy-line copy-line--magazine"><span class="copy-unit">オルタナティブ・</span><span class="copy-unit">ライフ・マガジン</span></span>
 				</h1>
-				<p class="cover-hero__lead">ニート/フリーター/会社員が肩書きを超えて集い<br />独自のニート論や実践的ノウハウを寄稿する<br />2020年代ニート・カルチャーの震源地です。</p>
+				<p class="cover-hero__lead">ニートマガジンは、ニート/フリーター/会社員が肩書きを超えて集い<br />独自のニート論や実践的ノウハウを寄稿する<br />2020年代ニート・カルチャーの震源地です。</p>
 				<Search items={searchItems} variant="compact" />
 			</div>
 			<a class="cover-hero__visual" href="/magazines/vol5">

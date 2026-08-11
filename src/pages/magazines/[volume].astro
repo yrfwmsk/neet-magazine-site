@@ -5,6 +5,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { isArchiveAvailable } from '../../lib/archive';
 import { formatDate, formatDateJa } from '../../lib/date';
 import { emdashHtml } from '../../lib/emdash';
+import { SITE_URL, absoluteUrl, canonicalUrl, truncateDescription } from '../../lib/seo';
 
 export async function getStaticPaths() {
 	const magazines = await getCollection('magazines');
@@ -25,6 +26,32 @@ const coverNoteHref = coverArtist && coverAfterword
 	: undefined;
 const summaryHtml = emdashHtml(magazine.data.summary);
 const volumeLabel = `vol.${magazine.data.volume.replace(/^vol/i, '')}`;
+const pageTitle = `${magazine.data.title} | ニートマガジン`;
+const pageDescription = truncateDescription(magazine.data.summary);
+const issueUrl = canonicalUrl(`/magazines/${magazine.data.volume}`);
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'PublicationIssue',
+	name: magazine.data.title,
+	description: pageDescription,
+	datePublished: magazine.data.publishedAt.toISOString(),
+	image: cover ? absoluteUrl(cover) : undefined,
+	url: issueUrl,
+	isPartOf: {
+		'@type': 'Periodical',
+		name: 'ニートマガジン',
+		url: SITE_URL,
+	},
+};
+const breadcrumbJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: [
+		{ '@type': 'ListItem', position: 1, name: 'ホーム', item: SITE_URL },
+		{ '@type': 'ListItem', position: 2, name: 'バックナンバー', item: canonicalUrl('/magazines') },
+		{ '@type': 'ListItem', position: 3, name: magazine.data.title, item: issueUrl },
+	],
+};
 
 /** 目次ラベル（例: スペシャルゲスト / 特集：…） */
 function tocEyebrows(
@@ -53,7 +80,12 @@ function tocEyebrows(
 }
 ---
 
-<BaseLayout title={`${magazine.data.title} | ニートマガジン`}>
+<BaseLayout
+	title={pageTitle}
+	description={pageDescription}
+	image={cover}
+	jsonLd={[jsonLd, breadcrumbJsonLd]}
+>
 	<div class="study">
 		<header class="page-header">
 			<nav class="data-label issue-page__breadcrumb" aria-label="パンくずリスト">
