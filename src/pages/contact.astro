@@ -28,11 +28,11 @@ const surveyArticleCatalog = (await getCollection('articles'))
 
 <BaseLayout
 	title="お問い合わせ | ニートマガジン"
-	description="ニートマガジンへのメンバー応募、乱入寄稿、匿名読者アンケート、その他のお問い合わせ窓口です。"
+	description="ニートマガジンへのメンバー応募、乱入寄稿、読者アンケート、その他のお問い合わせ窓口です。"
 >
 	<PageHero label="CONTACT" title="お問い合わせ" />
 	<section class="shell pb-16 md:pb-24">
-		<p class="max-w-xl text-[var(--muted)]">メンバー応募、乱入寄稿、匿名読者アンケート、その他のお問い合わせを<br />受け付けています。</p>
+		<p class="max-w-xl text-[var(--muted)]">メンバー応募、乱入寄稿、読者アンケート、その他のお問い合わせを受け付けています。</p>
 		<form id="contact-form" class="mt-12 max-w-2xl space-y-7" novalidate>
 			<div>
 				<label for="kind" class="block font-bold">種別</label>
@@ -40,7 +40,7 @@ const surveyArticleCatalog = (await getCollection('articles'))
 					<option value="">選択してください</option>
 					<option value="member">メンバー応募</option>
 					<option value="contribution">乱入寄稿応募</option>
-					<option value="survey">匿名読者アンケート</option>
+					<option value="survey">読者アンケート</option>
 					<option value="other">その他</option>
 				</select>
 			</div>

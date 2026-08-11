@@ -40,7 +40,7 @@ export type ContactSubmission =
 export const CONTACT_KIND_LABELS: Record<ContactKind, string> = {
 	member: 'メンバー応募',
 	contribution: '乱入寄稿応募',
-	survey: '匿名読者アンケート',
+	survey: '読者アンケート',
 	other: 'その他',
 };
 
