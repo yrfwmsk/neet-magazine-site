@@ -200,14 +200,17 @@ const { upcoming, past } = partitionByTodayDateKey(items, todayKey);
 			white-space: normal;
 		}
 
-		.event-item :global(.archive-card--strip .archive-card__title a),
-		.event-item :global(.archive-card--strip .archive-card__title span) {
+		/* 直下の a/span のみ。opt-kern など内側 span に block が当たると1字改行になる */
+		.event-item :global(.archive-card--strip .archive-card__title > a),
+		.event-item :global(.archive-card--strip .archive-card__title > span) {
 			display: block;
-			overflow-wrap: anywhere;
+			/* balance は余白があっても均等割りで途中改行するため使わない */
+			overflow-wrap: break-word;
 			transform: none;
 			white-space: normal;
 			width: auto;
-			word-break: break-word;
+			/* スペース優先で折り返し。「刊|行」のような単語内改行を防ぐ */
+			word-break: keep-all;
 		}
 
 		/* スマホは日付＋イベント名のみ */

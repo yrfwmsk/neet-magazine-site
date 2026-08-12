@@ -1,0 +1,19 @@
+﻿<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+body { margin: 20px; font-family: "Yu Gothic","YuGothic",sans-serif; }
+.row { display:flex; align-items:center; gap:0.7rem; border-block:1px solid #ddd; padding-block:0.6rem; width: 300px; margin-bottom: 8px; }
+.mark { width:2.75rem; height:2.75rem; background:#1f1c1d; color:#fff; display:grid; place-items:center; font-size:12px; flex-shrink:0; }
+.title { flex:1; min-width:0; overflow:hidden; font-size:0.9375rem; font-weight:700; letter-spacing:-0.025em; line-height:1.35; }
+.title > a { display:block; color:inherit; text-decoration:none; white-space:normal; }
+.old > a { overflow-wrap:anywhere; text-wrap:balance; word-break:break-word; }
+.new > a { overflow-wrap:break-word; word-break:keep-all; }
+label { font:12px monospace; color:#666; display:block; margin-top:14px; }
+</style></head><body>
+<label>old (balance + anywhere)</label>
+<div class="row"><div class="mark">12/07</div><h2 class="title old"><a href="#">ニートマガジン vol.4 刊行記念パーティ in 名古屋</a></h2></div>
+<div class="row"><div class="mark">11/16</div><h2 class="title old"><a href="#">すずひらさんとニーマガで飲も<span style="margin-inline-start:-0.09em">う</span>の会</a></h2></div>
+<label>new (keep-all + break-word)</label>
+<div class="row"><div class="mark">12/07</div><h2 class="title new"><a href="#">ニートマガジン vol.4 刊行記念パーティ in 名古屋</a></h2></div>
+<div class="row"><div class="mark">11/16</div><h2 class="title new"><a href="#">すずひらさんとニーマガで飲も<span style="margin-inline-start:-0.09em">う</span>の会</a></h2></div>
+</body></html>

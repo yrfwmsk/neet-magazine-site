@@ -1,0 +1,27 @@
+﻿<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=375">
+<style>
+html,body{margin:0;background:#fff}
+.shell{width:min(920px, calc(100% - 2.5rem)); margin:0 auto; padding-top:20px}
+.row{display:flex;align-items:center;gap:0.7rem;border-block:1px solid #ddd;padding-block:0.6rem}
+.mark{width:2.75rem;height:2.75rem;background:#1f1c1d;color:#fff;display:grid;place-items:center;font-size:12px;flex-shrink:0}
+.main{flex:1;min-width:0;overflow:hidden}
+.title{flex:1 1 auto;min-width:0;overflow:hidden;font:700 0.9375rem/1.35 "Yu Gothic","YuGothic",sans-serif;letter-spacing:-0.025em;white-space:normal}
+.title>a{display:block;color:inherit;text-decoration:none;overflow-wrap:break-word;word-break:keep-all;white-space:normal;width:auto}
+#out{font:12px monospace;white-space:pre-wrap;margin:12px;color:#444}
+</style></head><body>
+<div class="shell">
+  <div class="row"><div class="mark">12/07</div><div class="main"><h2 class="title" id="t1"><a href="#">ニートマガジン vol.4 刊行記念パーティ in 名古屋</a></h2></div></div>
+  <div class="row"><div class="mark">11/16</div><div class="main"><h2 class="title" id="t2"><a href="#">すずひらさんとニーマガで飲もうの会</a></h2></div></div>
+</div>
+<pre id="out"></pre>
+<script>
+function lines(el){
+  const a=el.querySelector('a');
+  const r=document.createRange(); r.selectNodeContents(a);
+  const rects=[...r.getClientRects()];
+  return {text:a.textContent, w:a.clientWidth, n:rects.length, tops:[...new Set(rects.map(x=>Math.round(x.top)))], widths:rects.map(x=>Math.round(x.width))};
+}
+document.getElementById('out').textContent = JSON.stringify({t1:lines(t1), t2:lines(t2), vw:innerWidth}, null, 2);
+</script>
+</body></html>

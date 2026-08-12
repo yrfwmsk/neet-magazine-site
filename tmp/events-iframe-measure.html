@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+html,body{margin:0}
+iframe{border:0;width:390px;height:2000px}
+#out{position:fixed;left:400px;top:0;width:360px;font:12px/1.4 monospace;white-space:pre-wrap}
+</style></head><body>
+<iframe id="f" src="http://localhost:4321/events"></iframe>
+<pre id="out">loading...</pre>
+<script>
+const f=document.getElementById('f');
+f.onload=()=>{
+  try{
+    const d=f.contentDocument;
+    const as=[...d.querySelectorAll('.archive-card__title a')];
+    const t=as.find(a=>a.textContent.includes('vol.4'));
+    const s=as.find(a=>a.textContent.includes('すずひら'));
+    function info(a){
+      if(!a) return null;
+      const r=document.createRange(); r.selectNodeContents(a);
+      const rects=[...r.getClientRects()].map(x=>({t:Math.round(x.top),l:Math.round(x.left),w:Math.round(x.width),h:Math.round(x.height)}));
+      const cs=getComputedStyle(a);
+      return {text:a.textContent, html:a.innerHTML, clientW:a.clientWidth, scrollW:a.scrollWidth, lines:rects.length, rects, wordBreak:cs.wordBreak, overflowWrap:cs.overflowWrap, textWrap:cs.textWrap, whiteSpace:cs.whiteSpace, display:cs.display};
+    }
+    document.getElementById('out').textContent=JSON.stringify({vol4:info(t), suzu:info(s)},null,2);
+  }catch(e){ document.getElementById('out').textContent=String(e); }
+};
+</script>
+</body></html>

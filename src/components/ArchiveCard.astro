@@ -317,8 +317,11 @@ const markDay = markDate ? String(markDate.getUTCDate()).padStart(2, '0') : '';
 		line-height: 1.45;
 	}
 
+	/* 『「 だけ左にぶら下げ、折り返し行は区切り線内の通常左端に揃える */
 	.archive-card__title--hang {
 		margin-left: -0.45em;
+		padding-left: 0.45em;
+		text-indent: -0.45em;
 	}
 
 	.archive-card__main {

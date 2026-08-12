@@ -1,0 +1,23 @@
+﻿<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<style>
+body { margin: 20px; font-family: "Yu Gothic", "YuGothic", sans-serif; }
+.row { display:flex; align-items:center; gap:0.7rem; border-block:1px solid #ddd; padding-block:0.6rem; width: 280px; }
+.mark { width:2.75rem; height:2.75rem; background:#1f1c1d; color:#fff; display:grid; place-items:center; font-size:12px; flex-shrink:0; }
+.title { flex:1; min-width:0; overflow:hidden; font-size:0.9375rem; font-weight:700; letter-spacing:-0.025em; line-height:1.35; }
+.title > a { display:block; overflow-wrap:anywhere; white-space:normal; word-break:break-word; color:inherit; text-decoration:none; }
+.opt-kern { margin-inline-start:-0.09em; }
+.bad .title a, .bad .title span { display:block; overflow-wrap:anywhere; word-break:break-word; }
+label { font:12px monospace; color:#666; display:block; margin-top:16px; }
+</style></head><body>
+<label>before (all spans block) — broken</label>
+<div class="row bad">
+  <div class="mark">11/16</div>
+  <h2 class="title m-0"><a href="#">すずひらさんとニーマガで飲も<span class="opt-kern">う</span>の会</a></h2>
+</div>
+<label>after (direct child only) — fixed</label>
+<div class="row">
+  <div class="mark">11/16</div>
+  <h2 class="title m-0"><a href="#">すずひらさんとニーマガで飲も<span class="opt-kern">う</span>の会</a></h2>
+</div>
+</body></html>
