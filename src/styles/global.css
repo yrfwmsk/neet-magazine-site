@@ -597,12 +597,27 @@ button, a, input, select, textarea { outline-offset: 3px; }
 }
 .eyebrow { font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .rule { border: 0; border-top: 1px solid var(--line); margin: 0; }
-.prose { font-size: 1.05rem; max-width: 46rem; line-height: 1.95; }
+.prose {
+	font-size: 1.05rem;
+	/* 本文幅 + 句読点ぶら下げ用ガター（padding 内にはみ出し） */
+	max-width: calc(46rem + 0.5em);
+	line-height: 1.95;
+	/* anywhere だと禁則を無視して途中改行することがある */
+	overflow-wrap: break-word;
+	hanging-punctuation: allow-end;
+	line-break: strict;
+	text-align: justify;
+	text-justify: inter-character;
+	text-spacing-trim: space-first;
+	padding-inline-end: 0.5em;
+	word-break: normal;
+}
 .prose h2, .prose h3 {
 	font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
 	font-weight: 900;
 	letter-spacing: -.03em;
 	line-height: 1.4;
+	text-align: start;
 }
 .prose h2 {
 	font-size: clamp(1.35rem, 2.6vw, 1.7rem);
@@ -617,12 +632,19 @@ button, a, input, select, textarea { outline-offset: 3px; }
 	margin-top: 1.85rem;
 }
 .prose p { margin: 1.1rem 0; }
-/* 二倍ダーシ（――）の字間ギャップ／途中改行を防ぐ */
+/* Chrome 等 hanging-punctuation 未対応向け: 、。の右側半角分を詰め、行末にはみ出しやすくする */
+.prose .punct-hang {
+	margin-inline-end: -0.5em;
+}
+/* 二倍ダーシ（――）の字間ギャップ／途中改行を防ぐ（inline-block だと両端揃えが崩れる） */
 .emdash {
-	display: inline-block;
 	letter-spacing: -0.22em;
 	margin-inline: 0.06em 0.12em;
 	white-space: nowrap;
+}
+/* 「もう」など、特定仮名ペアのサイドベアリング由来の空きを詰める */
+.opt-kern {
+	margin-inline-start: -0.09em;
 }
 .prose hr {
 	border: 0;
@@ -801,6 +823,9 @@ button, a, input, select, textarea { outline-offset: 3px; }
 }
 .prose--manga {
 	max-width: min(57.5rem, 100%); /* 920px: shell 内で漫画をできるだけ大きく */
+	hanging-punctuation: none;
+	padding-inline-end: 0;
+	text-align: start;
 }
 .prose .manga-pages {
 	margin: 0;

@@ -5,6 +5,7 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import fs from 'node:fs';
 import path from 'node:path';
+import { rehypeHangingPunct } from './src/lib/rehype-hanging-punct.js';
 
 const testPagePattern =
 	/\/(home-.*-tests|magazines\/accent-tests|magazines\/article-layout-tests)(\/|$)/;
@@ -56,8 +57,13 @@ const excludeFromSitemap = (pathname) => {
 export default defineConfig({
 	site: 'https://neet-magazine.com',
 	trailingSlash: 'never',
+	markdown: {
+		rehypePlugins: [rehypeHangingPunct],
+	},
 	integrations: [
-		mdx(),
+		mdx({
+			rehypePlugins: [rehypeHangingPunct],
+		}),
 		sitemap({
 			filter: (page) => !excludeFromSitemap(new URL(page).pathname),
 		}),
