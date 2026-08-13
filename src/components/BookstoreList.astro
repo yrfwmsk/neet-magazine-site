@@ -70,7 +70,7 @@ function formatPeriod(start?: Date, end?: Date) {
 								アクセス方法
 							</p>
 							{location && (
-								<p class="bookstore-item__address">
+								<p class="bookstore-item__address" x-apple-data-detectors="false">
 									{item.data.mapsUrl ? (
 										<a href={item.data.mapsUrl} target="_blank" rel="noopener noreferrer">
 											{location}
@@ -122,6 +122,8 @@ function formatPeriod(start?: Date, end?: Date) {
 	.bookstore-item__name a {
 		color: inherit;
 		text-decoration: underline;
+		text-decoration-skip-ink: none;
+		text-decoration-thickness: 1px;
 		text-underline-offset: 0.18em;
 	}
 
@@ -169,6 +171,7 @@ function formatPeriod(start?: Date, end?: Date) {
 	.bookstore-item__address a {
 		color: inherit;
 		text-decoration: underline;
+		text-decoration-skip-ink: none;
 		text-decoration-thickness: 1px;
 		text-underline-offset: 0.18em;
 	}

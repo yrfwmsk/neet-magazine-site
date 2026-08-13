@@ -46,7 +46,7 @@ const { items, variant = 'default' } = Astro.props;
 		);
 		status.textContent = `${matched.length}件の記事`;
 		results.innerHTML = matched.map((item) =>
-			`<li><a href="${item.href}">${item.title}</a> <span style="color:var(--muted)">— ${item.author} / ${item.volume}</span></li>`,
+			`<li><a href="${item.href}">${item.title}</a> <span class="article-search__meta">— ${item.author} / ${item.volume}</span></li>`,
 		).join('');
 	});
 </script>
@@ -113,6 +113,14 @@ const { items, variant = 'default' } = Astro.props;
 		margin: 1rem 0 0;
 		padding: 0;
 	}
+	.article-search__results :global(a) {
+		color: var(--ink);
+		font-weight: 700;
+		text-decoration: none;
+	}
+	.article-search__results :global(.article-search__meta) {
+		color: var(--muted);
+	}
 	.article-search__results :global(li + li) {
 		margin-top: .75rem;
 	}
@@ -152,14 +160,17 @@ const { items, variant = 'default' } = Astro.props;
 		opacity: 1;
 	}
 	.article-search--compact .article-search__feedback {
-		background: #fff;
-		box-shadow: 0 8px 20px #0002;
+		background: var(--page);
+		border: 1px solid var(--line);
+		box-shadow: 0 8px 20px color-mix(in srgb, #000 22%, transparent);
+		color: var(--ink);
 		left: 0;
 		max-height: min(18rem, 45vh);
 		overflow-y: auto;
 		position: absolute;
 		top: 100%;
 		width: 100%;
+		z-index: 5;
 	}
 	.article-search--compact .article-search__status {
 		font: .65rem/1.4 monospace;
@@ -174,6 +185,9 @@ const { items, variant = 'default' } = Astro.props;
 	}
 	.article-search--compact .article-search__results:empty,
 	.article-search--compact .article-search__status:empty {
+		display: none;
+	}
+	.article-search--compact .article-search__feedback:has(#search-status:empty):has(#search-results:empty) {
 		display: none;
 	}
 </style>

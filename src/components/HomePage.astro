@@ -63,7 +63,7 @@ const jsonLd = [
 				<p class="data-label">ニートマガジン / DIGITAL_ARCHIVE</p>
 				<h1>
 					<span class="copy-line copy-line--lead"><span class="copy-unit copy-unit--hang">「<span class="copy-open-gap" aria-hidden="true"></span>働きたくない」</span><span class="copy-unit">から</span><span class="copy-unit">始まる</span></span>
-					<span class="copy-line copy-line--magazine"><span class="copy-unit">オルタナティブ・</span><span class="copy-unit">ライフ・マガジン</span></span>
+					<span class="copy-line copy-line--magazine"><span class="copy-unit">オルタナティブ<span class="copy-middot">・</span></span><span class="copy-unit">ライフ<span class="copy-middot">・</span>マガジン</span></span>
 				</h1>
 				<p class="cover-hero__lead">ニート/フリーター/会社員が肩書きを超えて集い<br />独自のニート論や実践的ノウハウを寄稿する<br />2020年代ニート・カルチャーの震源地です。</p>
 				<Search items={searchItems} variant="compact" />
@@ -114,12 +114,18 @@ const jsonLd = [
 	.study {
 		--red: #801b33;
 		max-width: 100%;
+		position: relative;
+		z-index: 2;
 	}
 	.study :where(h1, h2),
 	.event-option h2 {
 		overflow-wrap: normal;
 		text-wrap: balance;
 		word-break: keep-all;
+	}
+	.copy-middot {
+		display: inline-block;
+		margin-inline: -0.28em;
 	}
 	.cover-hero__visual {
 		align-items: center;

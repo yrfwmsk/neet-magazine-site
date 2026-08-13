@@ -645,6 +645,11 @@ button, a, input, select, textarea { outline-offset: 3px; }
 .opt-kern {
 	margin-inline-start: -0.09em;
 }
+/* 全角中黒。左右の空きを少しだけ詰める */
+.middot {
+	display: inline-block;
+	margin-inline: -0.14em;
+}
 .prose hr {
 	border: 0;
 	border-top: 1px solid var(--line);

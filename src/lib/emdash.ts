@@ -4,5 +4,7 @@ export function emdashHtml(text: string): string {
 		.replaceAll('——', '――')
 		.replaceAll('――', '<span class="emdash">――</span>')
 		// Yu Gothic / Noto Serif JP などで「もう」の字間が空きすぎるのを詰める
-		.replaceAll('もう', 'も<span class="opt-kern">う</span>');
+		.replaceAll('もう', 'も<span class="opt-kern">う</span>')
+		// 全角中黒のサイドベアリング由来の空きを少し詰める（・・・は対象外）
+		.replace(/(?<!・)・(?!・)/g, '<span class="middot">・</span>');
 }
