@@ -71,10 +71,11 @@ const searchItems = articles
 		.archive-list :global(.archive-card--strip-issue .archive-card__highlight-col--intro) {
 			min-width: 0;
 			overflow: hidden;
+			padding-inline-end: 0.4em;
 		}
 
 		.archive-list :global(.archive-card--strip-issue .archive-card__intro-text) {
-			--intro-squeeze: 0.6;
+			--intro-squeeze: 0.56;
 			display: inline-block;
 			transform: scaleX(var(--intro-squeeze));
 			transform-origin: left center;
