@@ -56,6 +56,17 @@ const { items, variant = 'default' } = Astro.props;
 	};
 	input?.addEventListener('input', render);
 	input?.addEventListener('search', render);
+
+	const viewport = document.querySelector('meta[name="viewport"]');
+	const defaultViewport = viewport?.getAttribute('content') ?? 'width=device-width, initial-scale=1';
+	const lockedViewport = 'width=device-width, initial-scale=1, maximum-scale=1';
+	const lockViewport = () => viewport?.setAttribute('content', lockedViewport);
+	const unlockViewport = () => {
+		window.setTimeout(() => viewport?.setAttribute('content', defaultViewport), 50);
+	};
+	input?.addEventListener('touchstart', lockViewport, { passive: true });
+	input?.addEventListener('focus', lockViewport);
+	input?.addEventListener('blur', unlockViewport);
 </script>
 
 <style>
@@ -161,11 +172,12 @@ const { items, variant = 'default' } = Astro.props;
 	.article-search--compact .article-search__input {
 		font-size: .72rem;
 		padding: .45rem 0;
+		touch-action: manipulation;
 	}
-	@media (max-width: 759px) {
-		/* iOS は 16px 未満の input フォーカスでページをズームする */
+	@media (hover: none) and (pointer: coarse) {
+		/* iOS は描画上 16px 未満だと input フォーカスでページをズームする */
 		.article-search--compact .article-search__input {
-			font-size: 16px;
+			font-size: 16px !important;
 		}
 	}
 	.article-search--compact .article-search__input::placeholder {
