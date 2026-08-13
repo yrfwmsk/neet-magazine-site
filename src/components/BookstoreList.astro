@@ -20,7 +20,7 @@ function escapeHtml(text: string) {
 function introductionHtml(text: string) {
 	return escapeHtml(text).replace(
 		/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
-		'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
+		'<a href="$2" target="_blank" rel="noopener noreferrer" x-apple-data-detectors="false">$1</a>',
 	);
 }
 
@@ -44,7 +44,7 @@ function formatPeriod(start?: Date, end?: Date) {
 					<div class="bookstore-item__head">
 						<h3 class="bookstore-item__name">
 							{item.data.url ? (
-								<a href={item.data.url} target="_blank" rel="noopener noreferrer">
+								<a href={item.data.url} target="_blank" rel="noopener noreferrer" x-apple-data-detectors="false">
 									{item.data.name}
 								</a>
 							) : (
@@ -54,7 +54,7 @@ function formatPeriod(start?: Date, end?: Date) {
 						{period && <p class="bookstore-item__period">{period}</p>}
 					</div>
 					<div class="bookstore-item__sections">
-						<p class="bookstore-item__text bookstore-item__intro" set:html={introductionHtml(item.data.introduction)} />
+						<p class="bookstore-item__text bookstore-item__intro" x-apple-data-detectors="false" set:html={introductionHtml(item.data.introduction)} />
 						<div class="bookstore-item__section">
 							<p class="bookstore-item__label">
 								<svg class="bookstore-item__icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
@@ -72,7 +72,7 @@ function formatPeriod(start?: Date, end?: Date) {
 							{location && (
 								<p class="bookstore-item__address" x-apple-data-detectors="false">
 									{item.data.mapsUrl ? (
-										<a href={item.data.mapsUrl} target="_blank" rel="noopener noreferrer">
+										<a href={item.data.mapsUrl} target="_blank" rel="noopener noreferrer" x-apple-data-detectors="false">
 											{location}
 										</a>
 									) : (
@@ -119,12 +119,24 @@ function formatPeriod(start?: Date, end?: Date) {
 		margin: 0;
 	}
 
-	.bookstore-item__name a {
+	.bookstore-item :global(a) {
+		background-image: linear-gradient(currentColor, currentColor);
+		background-position: 0 1.14em;
+		background-repeat: no-repeat;
+		background-size: 100% 1.5px;
+		-webkit-box-decoration-break: clone;
+		box-decoration-break: clone;
 		color: inherit;
-		text-decoration: underline;
-		text-decoration-skip-ink: none;
-		text-decoration-thickness: 1px;
-		text-underline-offset: 0.18em;
+		padding-bottom: 0.12em;
+		text-decoration: none;
+	}
+
+	.bookstore-item :global(a[x-apple-data-detectors]) {
+		color: inherit !important;
+		font-family: inherit !important;
+		font-size: inherit !important;
+		font-weight: inherit !important;
+		letter-spacing: inherit !important;
 	}
 
 	.bookstore-item__period {
@@ -165,15 +177,6 @@ function formatPeriod(start?: Date, end?: Date) {
 		font-size: 0.9rem;
 		line-height: 1.7;
 		margin: 0 0 0.25rem;
-	}
-
-	.bookstore-item__intro :global(a),
-	.bookstore-item__address a {
-		color: inherit;
-		text-decoration: underline;
-		text-decoration-skip-ink: none;
-		text-decoration-thickness: 1px;
-		text-underline-offset: 0.18em;
 	}
 
 	.bookstore-item__text {

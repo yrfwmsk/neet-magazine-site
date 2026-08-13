@@ -417,6 +417,7 @@ button, a, input, select, textarea { outline-offset: 3px; }
 
 	.cover-hero {
 		min-height: auto;
+		overflow: visible;
 	}
 
 	.cover-hero__copy,
@@ -648,7 +649,7 @@ button, a, input, select, textarea { outline-offset: 3px; }
 /* 全角中黒。左右の空きを少しだけ詰める */
 .middot {
 	display: inline-block;
-	margin-inline: -0.14em;
+	margin-inline: -0.22em;
 }
 .prose hr {
 	border: 0;
