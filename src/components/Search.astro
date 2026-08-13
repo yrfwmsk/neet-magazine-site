@@ -162,6 +162,12 @@ const { items, variant = 'default' } = Astro.props;
 		font-size: .72rem;
 		padding: .45rem 0;
 	}
+	@media (max-width: 759px) {
+		/* iOS は 16px 未満の input フォーカスでページをズームする */
+		.article-search--compact .article-search__input {
+			font-size: 16px;
+		}
+	}
 	.article-search--compact .article-search__input::placeholder {
 		color: #777;
 		opacity: 1;

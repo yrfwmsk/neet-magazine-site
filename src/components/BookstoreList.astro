@@ -120,15 +120,9 @@ function formatPeriod(start?: Date, end?: Date) {
 	}
 
 	.bookstore-item :global(a) {
-		-webkit-box-decoration-break: clone;
-		-webkit-text-decoration: none !important;
-		background-image: none !important;
-		border-bottom: 1px solid var(--muted) !important;
-		border-bottom: 1px solid color-mix(in srgb, currentColor 42%, transparent) !important;
-		box-decoration-break: clone;
 		color: inherit !important;
-		padding-bottom: 0.14em;
-		text-decoration: none !important;
+		text-decoration: underline !important;
+		text-underline-offset: 0.18em;
 	}
 
 	.bookstore-item :global(a[x-apple-data-detectors]) {
