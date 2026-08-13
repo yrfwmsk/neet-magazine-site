@@ -242,22 +242,95 @@ const breadcrumbJsonLd = {
 	{archiveAvailable && (
 	<script>
 		const body = document.querySelector('#article-body');
-		body?.querySelectorAll<HTMLButtonElement>('[data-footnote]').forEach((button) => {
-			button.addEventListener('click', () => {
-				const popup = body.querySelector<HTMLElement>(`#${button.dataset.footnote}`);
-				const willOpen = popup?.dataset.open !== 'true';
-				body.querySelectorAll<HTMLElement>('[data-footnote-popup]').forEach((el) => {
-					el.dataset.open = 'false';
+		if (body) {
+			const canPopover = typeof HTMLElement.prototype.showPopover === 'function';
+			const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
+			const popups = [...body.querySelectorAll<HTMLElement>('[data-footnote-popup]')];
+			const homes = new WeakMap<HTMLElement, { parent: Node; next: ChildNode | null }>();
+			popups.forEach((popup) => {
+				homes.set(popup, { parent: popup.parentNode as Node, next: popup.nextSibling });
+				if (canPopover) popup.setAttribute('popover', 'manual');
+				const button = body.querySelector(`[data-footnote="${CSS.escape(popup.id)}"]`);
+				const label = button?.textContent?.trim();
+				if (label) popup.dataset.footnoteLabel = label;
+			});
+			const closeAll = () => {
+				popups.forEach((popup) => {
+					popup.dataset.open = 'false';
+					popup.style.removeProperty('top');
+					popup.style.removeProperty('left');
+					popup.style.removeProperty('visibility');
+					if (canPopover && popup.matches(':popover-open')) popup.hidePopover();
+					const home = homes.get(popup);
+					if (!canPopover && home && popup.parentNode === document.body) {
+						home.parent.insertBefore(popup, home.next);
+					}
 				});
 				body.querySelectorAll<HTMLButtonElement>('[data-footnote]').forEach((btn) => {
 					btn.setAttribute('aria-expanded', 'false');
 				});
-				if (popup && willOpen) {
-					popup.dataset.open = 'true';
-					button.setAttribute('aria-expanded', 'true');
+			};
+			const positionPopup = (button: HTMLButtonElement, popup: HTMLElement) => {
+				if (isMobile()) {
+					popup.style.removeProperty('top');
+					popup.style.removeProperty('left');
+					return;
 				}
+				const gap = 8;
+				const margin = 12;
+				const rect = button.getBoundingClientRect();
+				const vw = window.innerWidth;
+				const vh = window.innerHeight;
+				const popRect = popup.getBoundingClientRect();
+				let top = rect.bottom + gap;
+				if (top + popRect.height > vh - margin) {
+					const above = rect.top - gap - popRect.height;
+					top = above >= margin ? above : Math.max(margin, vh - margin - popRect.height);
+				}
+				let left = rect.left;
+				if (left + popRect.width > vw - margin) left = vw - margin - popRect.width;
+				if (left < margin) left = margin;
+				popup.style.top = `${top}px`;
+				popup.style.left = `${left}px`;
+			};
+			const openPopup = (button: HTMLButtonElement, popup: HTMLElement) => {
+				if (!canPopover) document.body.appendChild(popup);
+				popup.dataset.open = 'true';
+				button.setAttribute('aria-expanded', 'true');
+				if (!isMobile()) popup.style.visibility = 'hidden';
+				if (canPopover) popup.showPopover();
+				requestAnimationFrame(() => {
+					positionPopup(button, popup);
+					popup.style.visibility = '';
+				});
+			};
+			body.querySelectorAll<HTMLButtonElement>('[data-footnote]').forEach((button) => {
+				button.addEventListener('click', (event) => {
+					event.stopPropagation();
+					const id = button.dataset.footnote;
+					const popup = id ? document.getElementById(id) : null;
+					if (!popup) return;
+					const willOpen = popup.dataset.open !== 'true';
+					closeAll();
+					if (willOpen) openPopup(button, popup);
+				});
 			});
-		});
+			document.addEventListener('click', (event) => {
+				if (!(event.target instanceof Element)) return;
+				if (event.target.closest('[data-footnote], [data-footnote-popup]')) return;
+				closeAll();
+			});
+			document.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape') closeAll();
+			});
+			const reposition = () => {
+				const button = body.querySelector<HTMLButtonElement>('[data-footnote][aria-expanded="true"]');
+				const popup = popups.find((el) => el.dataset.open === 'true');
+				if (button && popup) positionPopup(button, popup);
+			};
+			window.addEventListener('scroll', reposition, { passive: true });
+			window.addEventListener('resize', reposition, { passive: true });
+		}
 	</script>
 	)}
 </BaseLayout>

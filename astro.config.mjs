@@ -5,6 +5,7 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import fs from 'node:fs';
 import path from 'node:path';
+import { rehypeEmdash } from './src/lib/rehype-emdash.js';
 import { rehypeHangingPunct } from './src/lib/rehype-hanging-punct.js';
 
 const testPagePattern =
@@ -58,11 +59,11 @@ export default defineConfig({
 	site: 'https://neet-magazine.com',
 	trailingSlash: 'never',
 	markdown: {
-		rehypePlugins: [rehypeHangingPunct],
+		rehypePlugins: [rehypeHangingPunct, rehypeEmdash],
 	},
 	integrations: [
 		mdx({
-			rehypePlugins: [rehypeHangingPunct],
+			rehypePlugins: [rehypeHangingPunct, rehypeEmdash],
 		}),
 		sitemap({
 			filter: (page) => !excludeFromSitemap(new URL(page).pathname),

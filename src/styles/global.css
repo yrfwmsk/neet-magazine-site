@@ -612,6 +612,14 @@ button, a, input, select, textarea { outline-offset: 3px; }
 	padding-inline-end: 0.5em;
 	word-break: normal;
 }
+@media (max-width: 767px) {
+	/* 短い行では strict だと余りが大きく、両端揃えが字間を開いて間延びする。
+	   loose で追い込みやすくし、詰めの letter-spacing で1字分を乗せやすくする */
+	.prose:not(.prose--manga) {
+		letter-spacing: -0.05em;
+		line-break: loose;
+	}
+}
 .prose h2, .prose h3 {
 	font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
 	font-weight: 900;
@@ -636,10 +644,12 @@ button, a, input, select, textarea { outline-offset: 3px; }
 .prose .punct-hang {
 	margin-inline-end: -0.5em;
 }
-/* 二倍ダーシ（――）の字間ギャップ／途中改行を防ぐ（inline-block だと両端揃えが崩れる） */
+/* 二倍ダーシ（――）。inline-block で両端揃えが中の字間を開かないようにする。
+   ― の左サイドベアリングが広いので、start 側のマージンは控えめにする */
 .emdash {
-	letter-spacing: -0.22em;
-	margin-inline: 0.06em 0.12em;
+	display: inline-block;
+	letter-spacing: -0.4em;
+	margin-inline: 0.04em 0.3em;
 	white-space: nowrap;
 }
 /* 「もう」など、特定仮名ペアのサイドベアリング由来の空きを詰める */
@@ -767,6 +777,12 @@ button, a, input, select, textarea { outline-offset: 3px; }
 	ruby-align: center;
 	ruby-position: over;
 }
+.prose ruby.ruby-spread {
+	ruby-align: space-between;
+}
+.prose ruby.ruby-spread rt {
+	letter-spacing: 1.15em;
+}
 .prose rt {
 	font-size: .5em;
 	font-weight: 400;
@@ -861,16 +877,47 @@ button, a, input, select, textarea { outline-offset: 3px; }
 	text-decoration: underline;
 	vertical-align: baseline;
 }
-.prose [data-footnote-popup] {
+.prose button[data-footnote][aria-expanded='true'] {
+	color: var(--ink);
+	font-weight: 700;
+}
+[data-footnote-popup] {
 	background: var(--panel);
 	border: 1px solid var(--line);
+	box-shadow: 0 10px 28px rgb(0 0 0 / 0.14);
+	color: var(--muted);
 	display: none;
 	font-size: .9rem;
-	margin: .6rem 0;
-	padding: .7rem .9rem;
+	line-height: 1.7;
+	line-break: strict;
+	margin: 0;
+	max-height: min(50vh, 22rem);
+	overflow-wrap: break-word;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: .75rem .9rem;
+	width: min(28rem, calc(100vw - 1.5rem));
+	z-index: 40;
 }
-.prose [data-footnote-popup][data-open='true'] { display: block; }
-.prose [data-footnote-popup] a { word-break: break-all; }
+[data-footnote-popup][data-open='true'] {
+	display: block;
+	inset: unset;
+	position: fixed;
+}
+@media (max-width: 767px) {
+	[data-footnote-popup][data-open='true'] {
+		bottom: max(0.75rem, env(safe-area-inset-bottom));
+		left: 0.75rem;
+		max-height: min(55dvh, 24rem);
+		right: 0.75rem;
+		top: auto;
+		width: auto;
+	}
+}
+[data-footnote-popup] a { word-break: break-all; }
+[data-footnote-popup]::before {
+	content: attr(data-footnote-label) " ";
+}
 
 .prose .dialogue-gloss {
 	background: var(--panel);

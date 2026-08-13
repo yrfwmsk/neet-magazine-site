@@ -1,4 +1,6 @@
 ---
+import { emdashHtml } from '../lib/emdash';
+
 interface Props {
 	penName: string;
 	afterword: string;
@@ -32,7 +34,7 @@ const socials = [
 	)}
 	<div class="author-afterword__body">
 		<p class="author-afterword__name">{penName}</p>
-		<p class="author-afterword__text">{afterword}</p>
+		<p class="author-afterword__text" set:html={emdashHtml(afterword)} />
 		{socials.length > 0 && (
 			<ul class="author-afterword__links">
 				{socials.map((item) => (
