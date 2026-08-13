@@ -348,15 +348,20 @@ button, a, input, select, textarea { outline-offset: 3px; }
 	min-width: 0;
 }
 
-.cover-hero__copy {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	padding: 1.75rem clamp(1.25rem, 4vw, 2.75rem) 1.75rem clamp(.5rem, 1.5vw, 1rem);
+.cover-hero__copy,
+.page-header {
+	padding: 1.75rem clamp(1.25rem, 4vw, 2.75rem) 0 clamp(.5rem, 1.5vw, 1rem);
 	transform: translateY(-.5rem);
 }
 
-.cover-hero__copy > * {
+.cover-hero__copy {
+	display: flex;
+	flex-direction: column;
+	padding-bottom: 1.75rem;
+}
+
+.cover-hero__copy > *,
+.page-header > * {
 	left: -.85rem;
 	position: relative;
 }
@@ -365,16 +370,6 @@ button, a, input, select, textarea { outline-offset: 3px; }
 	font-size: clamp(1.45rem, 4.5vw, 3.5rem);
 	line-height: 1.14;
 	margin: 1.25rem 0;
-}
-
-.page-header {
-	padding: 1.75rem clamp(1.25rem, 4vw, 2.75rem) 0 clamp(.5rem, 1.5vw, 1rem);
-	transform: translateY(-.5rem);
-}
-
-.page-header > * {
-	left: -.85rem;
-	position: relative;
 }
 
 .page-header :where(h1) {
@@ -388,6 +383,7 @@ button, a, input, select, textarea { outline-offset: 3px; }
 }
 
 @media (min-width: 760px) {
+	.cover-hero__copy,
 	.page-header {
 		padding-top: calc(1.75rem + .625rem);
 	}
@@ -423,20 +419,13 @@ button, a, input, select, textarea { outline-offset: 3px; }
 		min-height: auto;
 	}
 
-	.cover-hero__copy {
-		padding: 1.25rem;
-		transform: none;
-	}
-
-	.cover-hero__copy > * {
-		left: 0;
-	}
-
+	.cover-hero__copy,
 	.page-header {
 		padding-left: 1.25rem;
 		transform: none;
 	}
 
+	.cover-hero__copy > *,
 	.page-header > * {
 		left: 0;
 	}

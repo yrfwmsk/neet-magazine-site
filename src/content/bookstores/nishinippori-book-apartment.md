@@ -1,7 +1,7 @@
 ---
-name: 西日暮里BOOK APARTMENT（ニートマガジン棚）
+name: 西日暮里BOOK APARTMENT
 status: archived
-introduction: 西日暮里駅前のシェア型書店。2026年8月をもって取扱を終了しました。
+introduction: 西日暮里駅前のシェア型書店内、「ニートマガジン」の棚。2026年8月をもって取扱を終了しました。
 access: 日暮里・舎人ライナー西日暮里駅から徒歩約3分。
 prefecture: 東京都
 address: 荒川区西日暮里5-21-1 西日暮里スクランブル1F

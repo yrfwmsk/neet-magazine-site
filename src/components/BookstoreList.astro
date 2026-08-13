@@ -10,7 +10,18 @@ interface Props {
 const { items, archived = false } = Astro.props;
 
 function formatLocation(prefecture?: string, address?: string) {
-	return [prefecture, address].filter(Boolean).join('　');
+	return [prefecture, address].filter(Boolean).join('');
+}
+
+function escapeHtml(text: string) {
+	return text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+}
+
+function introductionHtml(text: string) {
+	return escapeHtml(text).replace(
+		/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+		'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
+	);
 }
 
 function formatPeriod(start?: Date, end?: Date) {
@@ -43,7 +54,7 @@ function formatPeriod(start?: Date, end?: Date) {
 						{period && <p class="bookstore-item__period">{period}</p>}
 					</div>
 					<div class="bookstore-item__sections">
-						<p class="bookstore-item__text bookstore-item__intro">{item.data.introduction}</p>
+						<p class="bookstore-item__text bookstore-item__intro" set:html={introductionHtml(item.data.introduction)} />
 						<div class="bookstore-item__section">
 							<p class="bookstore-item__label">
 								<svg class="bookstore-item__icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
@@ -154,6 +165,7 @@ function formatPeriod(start?: Date, end?: Date) {
 		margin: 0 0 0.25rem;
 	}
 
+	.bookstore-item__intro :global(a),
 	.bookstore-item__address a {
 		color: inherit;
 		text-decoration: underline;
