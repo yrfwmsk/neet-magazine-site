@@ -767,7 +767,12 @@ button, a, input, select, textarea { outline-offset: 3px; }
 .prose .quote-stack > p {
 	margin: 0;
 }
-.prose a { text-decoration: underline; }
+.prose a {
+	-webkit-text-decoration-color: var(--muted);
+	text-decoration: underline;
+	text-decoration-color: var(--muted);
+	text-underline-offset: 0.18em;
+}
 .prose ruby {
 	ruby-align: center;
 	ruby-position: over;
