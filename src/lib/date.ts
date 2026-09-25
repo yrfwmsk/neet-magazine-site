@@ -77,6 +77,16 @@ export function formatTodayLabel(date: Date = new Date()): string {
 	return `${year}年${month}月${day}日${weekday}曜日`;
 }
 
+/** 開催日が今日（Asia/Tokyo）以降のうち、いちばん近い1件 */
+export function pickNextByDateKey<T extends { dateKey: string }>(
+	items: readonly T[],
+	todayKey: string = getTokyoDateKey(),
+): T | undefined {
+	return items
+		.filter((item) => item.dateKey >= todayKey)
+		.sort((a, b) => a.dateKey.localeCompare(b.dateKey))[0];
+}
+
 export function partitionByTodayDateKey<T extends { dateKey: string }>(
 	items: T[],
 	todayKey: string = getTokyoDateKey(),

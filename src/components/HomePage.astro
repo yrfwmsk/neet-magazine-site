@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Search from './Search.astro';
 import { isVolumeArchiveAvailable } from '../lib/archive';
-import { getDateParts, getEventDateKey, getTokyoDateKey } from '../lib/date';
+import { getDateParts, getEventDateKey, getTokyoDateKey, pickNextByDateKey } from '../lib/date';
 import { plainSearchText } from '../lib/search-text';
 import { SITE_URL, absoluteUrl } from '../lib/seo';
 
@@ -20,12 +20,18 @@ const searchItems = articles
 	body: plainSearchText(article.body),
 	href: `/magazines/${article.data.volume}/${article.id.split('/').at(-1)}`,
 }));
-const nextEvent = events
-	.map((event) => ({ event, key: getEventDateKey(event.data.date) }))
-	.filter(({ key }) => key >= getTokyoDateKey())
-	.sort((a, b) => a.key.localeCompare(b.key))[0]?.event;
-const eventDateParts = nextEvent ? getDateParts(nextEvent.data.date) : null;
-const eventHref = nextEvent ? `/events/${nextEvent.id}` : '/events';
+const todayKey = getTokyoDateKey();
+const eventCards = events
+	.map((event) => ({
+		event,
+		dateKey: getEventDateKey(event.data.date),
+		parts: getDateParts(event.data.date),
+	}))
+	.sort((a, b) => a.dateKey.localeCompare(b.dateKey) || a.event.id.localeCompare(b.event.id));
+const nextEventCard = pickNextByDateKey(eventCards, todayKey);
+const upcomingEventCards = nextEventCard
+	? eventCards.filter((card) => card.dateKey >= nextEventCard.dateKey)
+	: [];
 const homeDescription =
 	'「働きたくない」から始まるオルタナティブ・ライフ・マガジン。ニート、フリーター、会社員が肩書きを超えて集う、2020年代ニート・カルチャーの震源地。';
 const jsonLd = [
@@ -78,35 +84,66 @@ const jsonLd = [
 
 	</div>
 
-	<section class="event-studies" aria-label="次のイベント">
-		{nextEvent ? (
-			<article class="event-option event-option--a">
-				<a href={eventHref}>
+	<section class="event-studies" data-next-events aria-label="次のイベント">
+		{upcomingEventCards.map((card) => (
+			<article
+				class="event-option event-option--a"
+				data-event-date={card.dateKey}
+				hidden={card !== nextEventCard}
+			>
+				<a href={`/events/${card.event.id}`}>
 					<p class="event-option__kicker">次のイベント</p>
 					<div
 						class="event-option__date-block"
-						aria-label={`${eventDateParts?.year}年${eventDateParts?.month}月${eventDateParts?.day}日`}
+						aria-label={`${card.parts.year}年${card.parts.month}月${card.parts.day}日`}
 					>
-						<span aria-hidden="true">{eventDateParts?.month}</span>
+						<span aria-hidden="true">{card.parts.month}</span>
 						<i aria-hidden="true">/</i>
-						<span aria-hidden="true">{eventDateParts?.day}</span>
+						<span aria-hidden="true">{card.parts.day}</span>
 					</div>
 					<div class="event-option__body">
-						<h2>{nextEvent.data.title}</h2>
+						<h2>{card.event.data.title}</h2>
 						<dl>
-							<div><dt>PLACE</dt><dd>{nextEvent.data.place}</dd></div>
-							<div><dt>BOOTH</dt><dd class="event-option__booth">{nextEvent.data.booth ? `【${nextEvent.data.booth}】` : '—'}</dd></div>
+							<div><dt>PLACE</dt><dd>{card.event.data.place}</dd></div>
+							<div><dt>BOOTH</dt><dd class="event-option__booth">{card.event.data.booth ? `【${card.event.data.booth}】` : '—'}</dd></div>
 						</dl>
 					</div>
 				</a>
 			</article>
-		) : (
-			<div class="event-option event-option--empty">
-				<p class="event-option__kicker">次のイベント</p>
-				<p>近日の出店予定はありません。<a href="/events">これまでの活動記録を見る</a></p>
-			</div>
-		)}
+		))}
+		<div class="event-option event-option--empty" data-event-empty hidden={Boolean(nextEventCard)}>
+			<p class="event-option__kicker">次のイベント</p>
+			<p>近日の出店予定はありません。<a href="/events">これまでの活動記録を見る</a></p>
+		</div>
 	</section>
+	<script is:inline>
+		(function () {
+			// 静的書き出しのあとでも、開催日が終わった翌日（Asia/Tokyo）から次の予定へ切り替える
+			var root = document.querySelector('[data-next-events]');
+			if (!root) return;
+			var today = new Intl.DateTimeFormat('en-CA', {
+				timeZone: 'Asia/Tokyo',
+				year: 'numeric',
+				month: '2-digit',
+				day: '2-digit',
+			}).format(new Date());
+			var cards = root.querySelectorAll('[data-event-date]');
+			var nextKey = null;
+			for (var i = 0; i < cards.length; i++) {
+				var key = cards[i].getAttribute('data-event-date') || '';
+				if (key >= today && (nextKey === null || key < nextKey)) nextKey = key;
+			}
+			var visible = null;
+			for (var j = 0; j < cards.length; j++) {
+				var cardKey = cards[j].getAttribute('data-event-date') || '';
+				var show = visible === null && cardKey === nextKey;
+				cards[j].hidden = !show;
+				if (show) visible = cards[j];
+			}
+			var empty = root.querySelector('[data-event-empty]');
+			if (empty) empty.hidden = visible !== null;
+		})();
+	</script>
 </BaseLayout>
 
 <style>
@@ -181,6 +218,7 @@ const jsonLd = [
 	}
 
 	.event-studies { display: grid; gap: 1.25rem; margin: .75rem auto 2.5rem; width: min(920px, calc(100% - 2.5rem)); }
+	.event-studies > .event-option[hidden] { display: none; }
 	.event-option { overflow: hidden; }
 	.event-option a { color: inherit; text-decoration: none; }
 	.event-option__kicker { font: 700 .68rem monospace; letter-spacing: .14em; margin: 0; }
